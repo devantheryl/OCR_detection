@@ -43,25 +43,24 @@ def find_numbers_positions(folder, batch_number):
     imgs_th = []
     merged_rectangles = {0:[],1:[]}
     POIs_total = []
+    test_rectangles = []
+    
+    
     for i in range(2):
         img_number = i+1
         filename = folder + "img" + str(img_number) + "_" + batch_number + ".png"
         
         img = cv.imread(filename,0)
-        
-        
+         
         h_cropped_low = int(img.shape[0] * 0.55)
-        h_cropped_high = int(img.shape[0] * 0.9)
-        
-        
-        
+        h_cropped_high = int(img.shape[0] * 0.9)   
+            
         if img_number == 1:
             w_cropped_low = int(img.shape[1] * 0.05)
             w_cropped_high = int(img.shape[1] * 0.9)
         else:
             w_cropped_low = int(img.shape[1] * 0.1)
-            w_cropped_high = int(img.shape[1] * 0.9)
-            
+            w_cropped_high = int(img.shape[1] * 0.9)    
             
         img  = img[h_cropped_low:h_cropped_high, w_cropped_low:w_cropped_high]
         
@@ -73,10 +72,8 @@ def find_numbers_positions(folder, batch_number):
         
         imgs.append(img)
         
-        
         #THRESHOLD
         th = cv.adaptiveThreshold(img,255,cv.ADAPTIVE_THRESH_MEAN_C,cv.THRESH_BINARY,61,10)
-        
         
         # Find Canny edges
         edged = cv.Canny(th, 50, 100,L2gradient = True)
@@ -84,9 +81,7 @@ def find_numbers_positions(folder, batch_number):
         
         cnts,h = cv.findContours(edged, cv.RETR_EXTERNAL,
         	cv.CHAIN_APPROX_SIMPLE)
-        
-        
-        
+         
         #cnts = imutils.grab_contours(cnts)
         digitCnts = []
         
@@ -100,22 +95,87 @@ def find_numbers_positions(folder, batch_number):
             
             
             if w > 5 and h > 5:
-                rectangles.append(cv.boundingRect(c))
-                
-            
+                rectangles.append(cv.boundingRect(c))    
+
+        """
+        CODE TO DETECT THE OVERLAPPING RECTANGLE
+        """
+        overlapping = {}
+        for k,rect1 in enumerate(rectangles):
+            overlapping[k] = []
+            for l,rect2 in enumerate(rectangles):
+                if intersects(rect1,rect2):
+                    overlapping[k].append(l)
         
         merged_rectangle = []
-        for rect1 in rectangles:
-            for rect2 in rectangles:
+        for key, value in overlapping.items():
+            if len(value)>1:
+                x = []
+                y = []
+                x2 = []
+                y2 = []
+                for index in value:
+                    rect = rectangles[index]
+                    x.append(rect[0])
+                    y.append(rect[1])
+                    x2.append(rect[0]+rect[2])
+                    y2.append(rect[1]+rect[3])
+                    merged_rectangle.append((min(x),min(y),max(x2)-min(x),max(y2)-min(y)))
+            else:
+                merged_rectangle.append(rectangles[value[0]])
+                
+        
+        overlapping = {}
+        for k,rect1 in enumerate(merged_rectangle):
+            overlapping[k] = []
+            for l,rect2 in enumerate(merged_rectangle):
                 if intersects(rect1,rect2):
-                    x = min(rect1[0],rect2[0])
-                    y = min(rect1[1],rect2[1])
-                    x2 = max(rect1[0]+rect1[2],rect2[0]+rect2[2])
-                    y2 = max(rect1[1]+rect1[3],rect2[1]+rect2[3])
-                    merged_rectangle.append((x,y,x2-x,y2-y))
-                    
-        merged_rectangle = [*set(merged_rectangle)] 
-    
+                    overlapping[k].append(l)
+        
+        merged_rectangle_second = []
+        for key, value in overlapping.items():
+            if len(value)>1:
+                x = []
+                y = []
+                x2 = []
+                y2 = []
+                for index in value:
+                    rect = merged_rectangle[index]
+                    x.append(rect[0])
+                    y.append(rect[1])
+                    x2.append(rect[0]+rect[2])
+                    y2.append(rect[1]+rect[3])
+                    merged_rectangle_second.append((min(x),min(y),max(x2)-min(x),max(y2)-min(y)))
+            else:
+                merged_rectangle_second.append(merged_rectangle[value[0]])
+                
+        overlapping = {}
+        for k,rect1 in enumerate(merged_rectangle_second):
+            overlapping[k] = []
+            for l,rect2 in enumerate(merged_rectangle_second):
+                if intersects(rect1,rect2):
+                    overlapping[k].append(l)
+        
+        merged_rectangle_third = []
+        for key, value in overlapping.items():
+            if len(value)>1:
+                x = []
+                y = []
+                x2 = []
+                y2 = []
+                for index in value:
+                    rect = merged_rectangle_second[index]
+                    x.append(rect[0])
+                    y.append(rect[1])
+                    x2.append(rect[0]+rect[2])
+                    y2.append(rect[1]+rect[3])
+                    merged_rectangle_third.append((min(x),min(y),max(x2)-min(x),max(y2)-min(y)))
+            else:
+                merged_rectangle_third.append(merged_rectangle_second[value[0]])
+                
+                
+        merged_rectangle = [*set(merged_rectangle_third)] 
+        
         for x,y,w,h in merged_rectangle:
             # if the contour is sufficiently large, it must be a digit
             if w >= 30 and h >= 60:
@@ -129,26 +189,24 @@ def find_numbers_positions(folder, batch_number):
         
         total_number = []
         for k,v in POIs.items():
-            text = pytesseract.image_to_string(v,config='--psm 10 --oem 3 -c tessedit_char_whitelist=0123456789')
-            if text == "":
-                pass
-            else:
-                total_number.append(text[0])
+            #text = pytesseract.image_to_string(v,config='--psm 10 --oem 3 -c tessedit_char_whitelist=0123456789')
+            #if text == "":
+             #   pass
+            #else:
+             #   total_number.append(text[0])
             #cv.imshow('Contours', v)
             #cv.waitKey(0)
             #cv.destroyAllWindows()
-            
-        
-        
-        
-        
+            pass
+
         imgs_th.append(th)
         
         total_numbers.append(total_number)
         POIs_total.append(POIs)
         
-        
-    
+        #to remove
+        test_rectangles.append(rectangles)
+          
     return total_numbers, merged_rectangles, imgs, imgs_th, POIs_total
 
 
