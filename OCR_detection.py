@@ -73,7 +73,10 @@ def find_numbers_positions(folder, batch_number):
         imgs.append(img)
         
         #THRESHOLD
-        th = cv.adaptiveThreshold(img,255,cv.ADAPTIVE_THRESH_MEAN_C,cv.THRESH_BINARY,61,10)
+        filter_size = int(152 * scale_percent /100)
+        filter_size = filter_size+1 if filter_size %2 == 0 else filter_size
+        
+        th = cv.adaptiveThreshold(img,255,cv.ADAPTIVE_THRESH_MEAN_C,cv.THRESH_BINARY,filter_size,10)
         th = cv.GaussianBlur(th,(7,15),0)
         
         # Find Canny edges
@@ -146,12 +149,15 @@ def find_numbers_positions(folder, batch_number):
                 merged_rectangle.append((min(x),min(y),max(x2)-min(x),max(y2)-min(y)))
             else:
                 merged_rectangle.append(rectangles[value[0]])
-   
+        
         merged_rectangle = [*set(merged_rectangle)] 
+        
+        width_limit = int(75 * scale_percent/100)
+        height_limit = int(150 * scale_percent/100)
         
         for x,y,w,h in merged_rectangle:
             # if the contour is sufficiently large, it must be a digit
-            if w >= 30 and h >= 60:
+            if w >= width_limit and h >= height_limit:
                 
                 POI = th[y:y+h, x:x+w]
             
@@ -161,7 +167,7 @@ def find_numbers_positions(folder, batch_number):
         POIs = collections.OrderedDict(sorted(POIs.items()))
         
         total_number = []
-        for k,v in POIs.items():
+        #for k,v in POIs.items():
             #text = pytesseract.image_to_string(v,config='--psm 10 --oem 3 -c tessedit_char_whitelist=0123456789')
             #if text == "":
              #   pass
@@ -170,7 +176,7 @@ def find_numbers_positions(folder, batch_number):
             #cv.imshow('Contours', v)
             #cv.waitKey(0)
             #cv.destroyAllWindows()
-            pass
+            
 
         imgs_th.append(th)
         
