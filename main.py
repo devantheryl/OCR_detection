@@ -15,11 +15,11 @@ import OCR_detection as ocr
 import cv2 as cv
 
 # keep in mind that open CV loads images as BGR not RGB
-folder = "Tests_Analyse/Production_17.03.22/"
-batch_number = "1-20220317_084100"
+folder = "Tests_Analyse/Conforme_police actuelle/"
+batch_number = "28-20220310_130128"
 
 
-numbers, rectangles, imgs, imgs_th, POIs_total = ocr.find_numbers_positions(folder, batch_number)
+numbers, rectangles,tests, imgs, imgs_th, POIs_total = ocr.find_numbers_positions(folder, batch_number)
 
 print(numbers)
 for rectangle in rectangles[0]:

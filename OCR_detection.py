@@ -16,7 +16,7 @@ from imutils import contours
 import imutils
 import collections
 import numpy as np
-
+import graph_utils as Graph
 
 os.chdir("C:/Users/LDE/Prog/OCR_detection")
 
@@ -74,6 +74,7 @@ def find_numbers_positions(folder, batch_number):
         
         #THRESHOLD
         th = cv.adaptiveThreshold(img,255,cv.ADAPTIVE_THRESH_MEAN_C,cv.THRESH_BINARY,61,10)
+        th = cv.GaussianBlur(th,(7,15),0)
         
         # Find Canny edges
         edged = cv.Canny(th, 50, 100,L2gradient = True)
@@ -93,20 +94,42 @@ def find_numbers_positions(folder, batch_number):
         	# compute the bounding box of the contour
             (x, y, w, h) = cv.boundingRect(c)
             
-            
+            rectangles.append(cv.boundingRect(c))
             if w > 5 and h > 5:
-                rectangles.append(cv.boundingRect(c))    
+                #rectangles.append(cv.boundingRect(c))   
+                pass
 
         """
         CODE TO DETECT THE OVERLAPPING RECTANGLE
         """
-        overlapping = {}
+        V = len(rectangles)
+        graph = Graph.Graph(V)
+    
+
+        test = {}
         for k,rect1 in enumerate(rectangles):
-            overlapping[k] = []
+            test[k] = []
             for l,rect2 in enumerate(rectangles):
                 if intersects(rect1,rect2):
-                    overlapping[k].append(l)
+                    graph.addEdge(k, l)
+                    test[k].append(l)
+
+        # For every ith element in the arr
+        # find all reachable nodes from query[i]
+        arr = [n for n in range(V)]
+         
+        reach_node = graph.findReachableNodes(arr, V)
         
+        overlapping = {}
+        already_visited=[]
+        for key, value in reach_node.items():
+            if key not in already_visited:
+                overlapping[key] = value
+                already_visited.append(key)
+                for v in value:
+                    already_visited.append(v)
+            
+            
         merged_rectangle = []
         for key, value in overlapping.items():
             if len(value)>1:
@@ -123,58 +146,8 @@ def find_numbers_positions(folder, batch_number):
                     merged_rectangle.append((min(x),min(y),max(x2)-min(x),max(y2)-min(y)))
             else:
                 merged_rectangle.append(rectangles[value[0]])
-                
-        
-        overlapping = {}
-        for k,rect1 in enumerate(merged_rectangle):
-            overlapping[k] = []
-            for l,rect2 in enumerate(merged_rectangle):
-                if intersects(rect1,rect2):
-                    overlapping[k].append(l)
-        
-        merged_rectangle_second = []
-        for key, value in overlapping.items():
-            if len(value)>1:
-                x = []
-                y = []
-                x2 = []
-                y2 = []
-                for index in value:
-                    rect = merged_rectangle[index]
-                    x.append(rect[0])
-                    y.append(rect[1])
-                    x2.append(rect[0]+rect[2])
-                    y2.append(rect[1]+rect[3])
-                    merged_rectangle_second.append((min(x),min(y),max(x2)-min(x),max(y2)-min(y)))
-            else:
-                merged_rectangle_second.append(merged_rectangle[value[0]])
-                
-        overlapping = {}
-        for k,rect1 in enumerate(merged_rectangle_second):
-            overlapping[k] = []
-            for l,rect2 in enumerate(merged_rectangle_second):
-                if intersects(rect1,rect2):
-                    overlapping[k].append(l)
-        
-        merged_rectangle_third = []
-        for key, value in overlapping.items():
-            if len(value)>1:
-                x = []
-                y = []
-                x2 = []
-                y2 = []
-                for index in value:
-                    rect = merged_rectangle_second[index]
-                    x.append(rect[0])
-                    y.append(rect[1])
-                    x2.append(rect[0]+rect[2])
-                    y2.append(rect[1]+rect[3])
-                    merged_rectangle_third.append((min(x),min(y),max(x2)-min(x),max(y2)-min(y)))
-            else:
-                merged_rectangle_third.append(merged_rectangle_second[value[0]])
-                
-                
-        merged_rectangle = [*set(merged_rectangle_third)] 
+   
+        merged_rectangle = [*set(merged_rectangle)] 
         
         for x,y,w,h in merged_rectangle:
             # if the contour is sufficiently large, it must be a digit
@@ -207,7 +180,7 @@ def find_numbers_positions(folder, batch_number):
         #to remove
         test_rectangles.append(rectangles)
           
-    return total_numbers, merged_rectangles, imgs, imgs_th, POIs_total
+    return total_numbers, merged_rectangles, test_rectangles, imgs, imgs_th, POIs_total
 
 
   
