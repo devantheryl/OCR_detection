@@ -167,15 +167,7 @@ def find_numbers_positions(folder, batch_number):
         POIs = collections.OrderedDict(sorted(POIs.items()))
         
         total_number = []
-        #for k,v in POIs.items():
-            #text = pytesseract.image_to_string(v,config='--psm 10 --oem 3 -c tessedit_char_whitelist=0123456789')
-            #if text == "":
-             #   pass
-            #else:
-             #   total_number.append(text[0])
-            #cv.imshow('Contours', v)
-            #cv.waitKey(0)
-            #cv.destroyAllWindows()
+        
             
 
         imgs_th.append(th)
