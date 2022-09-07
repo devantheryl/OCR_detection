@@ -21,6 +21,9 @@ batch_number = "28-20220310_130128"
 
 numbers, rectangles,tests, imgs, imgs_th, POIs_total = ocr.find_numbers_positions(folder, batch_number)
 
+
+imgs_test = imgs.copy()
+
 print(numbers)
 for rectangle in rectangles[0]:
     x,y,w,h = rectangle    
@@ -45,4 +48,18 @@ plt.imshow(imgs_th[1],'gray')
 plt.show()
 
 
+for rectangle in tests[0]:
+        x,y,w,h = rectangle    
+        cv.rectangle(imgs_test[0],(x,y),(x+w,y+h),(255,255,0),2)
+        
+for rectangle in tests[1]:
+    x,y,w,h = rectangle    
+    cv.rectangle(imgs_test[1],(x,y),(x+w,y+h),(255,255,0),2)
+
+
+plt.imshow(imgs_test[0],'gray')
+plt.show()
+
+plt.imshow(imgs_test[1],'gray')
+plt.show()
 

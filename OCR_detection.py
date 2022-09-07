@@ -95,9 +95,9 @@ def find_numbers_positions(folder, batch_number):
             (x, y, w, h) = cv.boundingRect(c)
             
             rectangles.append(cv.boundingRect(c))
-            if w > 5 and h > 5:
+            #if w > 5 and h > 5:
                 #rectangles.append(cv.boundingRect(c))   
-                pass
+                #pass
 
         """
         CODE TO DETECT THE OVERLAPPING RECTANGLE
@@ -143,7 +143,7 @@ def find_numbers_positions(folder, batch_number):
                     y.append(rect[1])
                     x2.append(rect[0]+rect[2])
                     y2.append(rect[1]+rect[3])
-                    merged_rectangle.append((min(x),min(y),max(x2)-min(x),max(y2)-min(y)))
+                merged_rectangle.append((min(x),min(y),max(x2)-min(x),max(y2)-min(y)))
             else:
                 merged_rectangle.append(rectangles[value[0]])
    
