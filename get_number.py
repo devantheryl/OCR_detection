@@ -36,51 +36,31 @@ from tensorflow.keras.preprocessing.image import load_img, img_to_array, array_t
 
 
 
-def get_number_from_image_POI(folder, filename, model):
+def get_number_from_image_POI(model,POIs):
     # keep in mind that open CV loads images as BGR not RGB
-    
-   
+    nbr_POIs1 = len(POIs[0])
+    nbr_POIs2 = len(POIs[1])
+    batch = np.zeros((nbr_POIs1+nbr_POIs2,32,32,3))
+    i = 0
+    for poi in POIs:
         
-    numbers, rectangles,tests, imgs, imgs_th, POIs_total = ocr.find_numbers_positions(folder, filename)
-    
-    for i, poi in enumerate(POIs_total):
+        for key, value in (poi.items()):
         
-        for key, value in poi.items():
-            
-            
-   
-            
-            plt.imshow(value,'gray')
-            plt.show()
             
             value = cv.resize(value, (32,32), interpolation = cv.INTER_AREA)/255
             value = np.array(value).reshape(-1, 32, 32).astype('float32')
             value = np.stack((value,)*3, axis = -1)
-                 
-            print(model.predict_classes(value))
+            
+            batch[i] = value
+            
+            i+=1
+    
+    predictions = model.predict(batch)
 
-checkpoint_path = "model/training_real_number_only_1/cp.ckpt"
-checkpoint_dir = os.path.dirname(checkpoint_path)
+            
+    return np.argmax(predictions,axis = 1), predictions
 
-
-latest = tf.train.latest_checkpoint(checkpoint_dir)
-
-# Create a new model instance
-model = Sequential()
-model.add(ResNet50(include_top = False, pooling = 'avg', weights = 'imagenet'))
-model.add(Dense(512,activation = 'relu'))
-model.add(Dense(10,activation = 'softmax'))
-
-#set resnet layer not trainable
-model.layers[0].trainable = False #layers 0 is the pretrained resnet model
-
-model.summary()
-
-model.compile(optimizer = "Adam", loss = 'categorical_crossentropy', metrics = ["accuracy"])
-
-# Load the previously saved weights
-model.load_weights(latest)
+    
 
 
-get_number_from_image_POI(folder = "Tests_Analyse/Numeros_new_police/Valeurs_0a9/", filename="0-1",model = model)
                 

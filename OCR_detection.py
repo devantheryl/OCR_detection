@@ -41,8 +41,11 @@ def find_numbers_positions(folder, batch_number):
     total_numbers = []
     imgs = []
     imgs_th = []
+    imgs_cropped = []
     merged_rectangles = {0:[],1:[]}
-    POIs_total = []
+    POIs_total_th = []
+    POIs_total_img_resized = []
+    POIs_total_img = []
     test_rectangles = []
     
     
@@ -62,21 +65,22 @@ def find_numbers_positions(folder, batch_number):
             w_cropped_low = int(img.shape[1] * 0.1)
             w_cropped_high = int(img.shape[1] * 0.9)    
             
-        img  = img[h_cropped_low:h_cropped_high, w_cropped_low:w_cropped_high]
+        img_cropped  = img[h_cropped_low:h_cropped_high, w_cropped_low:w_cropped_high]
+        imgs_cropped.append(img_cropped)
         
         scale_percent = 40 # percent of original size
-        width = int(img.shape[1] * scale_percent / 100)
-        height = int(img.shape[0] * scale_percent / 100)
+        width = int(img_cropped.shape[1] * scale_percent / 100)
+        height = int(img_cropped.shape[0] * scale_percent / 100)
         dim = (width, height)
-        img = cv.resize(img,dim, interpolation = cv.INTER_AREA)
+        img_resized = cv.resize(img_cropped,dim, interpolation = cv.INTER_AREA)
         
-        imgs.append(img)
+        imgs.append(img_resized)
         
         #THRESHOLD
         filter_size = int(152 * scale_percent /100)
         filter_size = filter_size+1 if filter_size %2 == 0 else filter_size
         
-        th = cv.adaptiveThreshold(img,255,cv.ADAPTIVE_THRESH_MEAN_C,cv.THRESH_BINARY,filter_size,10)
+        th = cv.adaptiveThreshold(img_resized,255,cv.ADAPTIVE_THRESH_MEAN_C,cv.THRESH_BINARY,filter_size,10)
         th = cv.GaussianBlur(th,(7,15),0)
         
         # Find Canny edges
@@ -89,7 +93,9 @@ def find_numbers_positions(folder, batch_number):
         #cnts = imutils.grab_contours(cnts)
         digitCnts = []
         
-        POIs = {}
+        POIs_th = {}
+        POIs_img_resized = {}
+        POIs_img = {}
         
         rectangles = []
         # loop over the digit area candidates
@@ -159,12 +165,19 @@ def find_numbers_positions(folder, batch_number):
             # if the contour is sufficiently large, it must be a digit
             if w >= width_limit and h >= height_limit:
                 
-                POI = th[y:y+h, x:x+w]
+                POI_th = th[y:y+h, x:x+w]
+                POI_img_resized = img_resized[y:y+h, x:x+w]
+                POI_img = img_cropped[int((100/scale_percent )* y):int((100/scale_percent )* (y+h)), int((100/scale_percent )* x):int((100/scale_percent )* (x+w))]
             
-                POIs[x] = POI
+                POIs_th[x] = POI_th
+                POIs_img_resized[x] = POI_img_resized
+                POIs_img[x] = POI_img
+                
                 merged_rectangles[i].append((x,y,w,h))
         
-        POIs = collections.OrderedDict(sorted(POIs.items()))
+        POIs_th = collections.OrderedDict(sorted(POIs_th.items()))
+        POIs_img_resized = collections.OrderedDict(sorted(POIs_img_resized.items()))
+        POIs_img = collections.OrderedDict(sorted(POIs_img.items()))
         
         total_number = []
         
@@ -173,12 +186,14 @@ def find_numbers_positions(folder, batch_number):
         imgs_th.append(th)
         
         total_numbers.append(total_number)
-        POIs_total.append(POIs)
+        POIs_total_th.append(POIs_th)
+        POIs_total_img_resized.append(POIs_img_resized)
+        POIs_total_img.append(POIs_img)
         
         #to remove
         test_rectangles.append(rectangles)
           
-    return total_numbers, merged_rectangles, test_rectangles, imgs, imgs_th, POIs_total
+    return total_numbers, merged_rectangles,imgs_cropped, imgs, imgs_th, POIs_total_th, POIs_total_img_resized,POIs_total_img
 
 
   

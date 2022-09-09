@@ -67,10 +67,10 @@ def create_get_dataset(train_test = 0.8):
     for batch_number in batch_numbers:
         number = batch_number.split("-")[0]
         
-        numbers, rectangles,tests, imgs, imgs_th, POIs_total = ocr.find_numbers_positions(folder, batch_number)
+        numbers, rectangles,tests, imgs, imgs_th, POIs_total_th, POIs_total_img,_ = ocr.find_numbers_positions(folder, batch_number)
         
         
-        """
+        
         imgs_test = imgs.copy()
         
         
@@ -83,7 +83,7 @@ def create_get_dataset(train_test = 0.8):
             cv.rectangle(imgs[1],(x,y),(x+w,y+h),(255,255,0),2)
             
         
-        
+        """
         plt.imshow(imgs[0],'gray')
         plt.show()
     
@@ -96,6 +96,7 @@ def create_get_dataset(train_test = 0.8):
         plt.imshow(imgs_th[1],'gray')
         plt.show()
         
+        
         for rectangle in tests[0]:
             x,y,w,h = rectangle    
             cv.rectangle(imgs_test[0],(x,y),(x+w,y+h),(255,255,0),2)
@@ -103,8 +104,7 @@ def create_get_dataset(train_test = 0.8):
         for rectangle in tests[1]:
             x,y,w,h = rectangle    
             cv.rectangle(imgs_test[1],(x,y),(x+w,y+h),(255,255,0),2)
-        """
-        """    
+         
         plt.imshow(imgs_test[0],'gray')
         plt.show()
         
@@ -112,9 +112,8 @@ def create_get_dataset(train_test = 0.8):
         plt.show()
         """
         
-          
         
-        for i, poi in enumerate(POIs_total):
+        for i, poi in enumerate(POIs_total_th):
             
             for key, value in poi.items():
                 filename = number + "/"  + str(img_number) +".png"
@@ -132,6 +131,7 @@ def create_get_dataset(train_test = 0.8):
                 
 
                 img_number += 1
+        
                 
     print(train_nbr,test_nbr,img_number)
                 
