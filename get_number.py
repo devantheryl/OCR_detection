@@ -38,22 +38,22 @@ from tensorflow.keras.preprocessing.image import load_img, img_to_array, array_t
 
 def get_number_from_image_POI(model,POIs):
     # keep in mind that open CV loads images as BGR not RGB
-    nbr_POIs1 = len(POIs[0])
-    nbr_POIs2 = len(POIs[1])
-    batch = np.zeros((nbr_POIs1+nbr_POIs2,32,32,3))
+    nbr_POIs = len(POIs)
+
+    batch = np.zeros((nbr_POIs,32,32,3))
     i = 0
-    for poi in POIs:
+
         
-        for key, value in (poi.items()):
+    for key, value in (POIs.items()):
         
-            
-            value = cv.resize(value, (32,32), interpolation = cv.INTER_AREA)/255
-            value = np.array(value).reshape(-1, 32, 32).astype('float32')
-            value = np.stack((value,)*3, axis = -1)
-            
-            batch[i] = value
-            
-            i+=1
+        
+        value = cv.resize(value, (32,32), interpolation = cv.INTER_AREA)/255
+        value = np.array(value).reshape(-1, 32, 32).astype('float32')
+        value = np.stack((value,)*3, axis = -1)
+        
+        batch[i] = value
+        
+        i+=1
     
     predictions = model.predict(batch)
 

@@ -30,19 +30,19 @@ def get_masked_POI(POIs_resized):
     
     maskeds = []
     masks = []
-    for POIs in POIs_resized:
-        for key, POI in POIs.items():
+    
+    for key, POI in POIs_resized.items():
             
             
-            blur = cv.GaussianBlur(POI,(9,9),0)
-            ret3,th = cv.threshold(blur,0,255,cv.THRESH_BINARY+cv.THRESH_OTSU)
+        blur = cv.GaussianBlur(POI,(9,9),0)
+        ret3,th = cv.threshold(blur,0,255,cv.THRESH_BINARY+cv.THRESH_OTSU)
+    
         
-            
-            masked = POI.copy()
-            masked[th == 255] = 255
-            
-            maskeds.append(masked)
-            masks.append(th)
+        masked = POI.copy()
+        masked[th == 255] = 255
+        
+        maskeds.append(masked)
+        masks.append(th)
             
             
            

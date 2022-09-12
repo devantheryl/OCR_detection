@@ -19,6 +19,7 @@ from os import walk
 import numpy as np
 from sklearn.metrics import accuracy_score
 from PIL import Image, ImageOps, ImageEnhance
+import pandas as pd
 
 import tensorflow as tf
 from tensorflow import keras
@@ -54,7 +55,7 @@ model.load_weights(latest)
 """
 GET ALL THE FILE IN A FOLDER
 """
-folder = "Tests_Analyse/dataset/train/0"
+folder = "Tests_Analyse/production_08.09.22/"
 
 f = []
 for (dirpath, dirnames, filenames) in walk(folder):
@@ -65,48 +66,94 @@ for (dirpath, dirnames, filenames) in walk(folder):
 """
 GO TROUGH ALL THE FILES
 """
+problem_filename = []
+
+datas = pd.DataFrame(data = None, columns=("number", "proba", "stats0", "stats1", "stats2", "stats3"))
+img_index = 0
+out_directory = "dataset/production_08.09.22/"
+
 for filename in f:
     
-    filename = filename.split(".")[0].split("img")[1][2:]
+    img_number = filename.split("img")[1][0]
     #GET ALL RELEVANT INFORMATION FROM IMAGE
-    numbers, rectangles,imgs_cropped, imgs, imgs_th, POIs_total_th, POIs_total_img_resized, POIs_total_img = ocr.find_numbers_positions(folder, filename)
+    
+    numbers, rectangles,imgs_cropped, imgs, imgs_th, POIs_total_th, POIs_total_img_resized, POIs_total_img = ocr.find_numbers_positions(folder, filename, img_number)
     
     #predict the classes
     classes, probas = get_number.get_number_from_image_POI(model,POIs_total_th)
     
-    #compute the batch_number, TO CHANGE TO BE MORE GENERIC
-    nbr_digit1 = len(POIs_total_img_resized[0])
-    number1 = classes[:nbr_digit1]
-    number2 = classes[-(8-nbr_digit1):]
-    batch_number = np.concatenate([number1,number2])
     
-    proba_score = np.mean([probas[i,classe] for i, classe in enumerate(classes)])
+    batch_number = classes
+    
+    proba_score = [probas[i,classe] for i, classe in enumerate(classes)]
     
     maskeds, masks = quality.get_masked_POI(POIs_total_img)
     
     
-    for i, masked in enumerate(maskeds):
-        plt.imshow(masked,'gray')
+    stats_0 = []
+    stats_1 = []
+    stats_2 = []
+    stats_3 = []
+    
+    for i,(_, poi) in enumerate(POIs_total_img.items()):
+            
+        ret3,th = cv.threshold(poi,0,255,cv.THRESH_BINARY+cv.THRESH_OTSU)
+        th = cv.resize(th, (32,32), interpolation = cv.INTER_AREA)/255
+        #plt.imshow(th,'gray')
+        #plt.show()  
+        
+        th_no_white = th[th<1]
+        th_no_white_no_black = th_no_white[th_no_white>0]
+        
+        stats_0.append(np.mean((th_no_white)/np.mean(th_no_white_no_black)))
+        stats_1.append(len(th_no_white)/(32*32))
+        stats_2.append(len(th_no_white_no_black)/(32*32))
+        stats_3.append(np.mean(th_no_white_no_black))
+        
+        data = pd.DataFrame({"number" :batch_number[i],"proba": proba_score[i],"stats0": stats_0[-1],"stats1":stats_1[-1],"stats2" : stats_2[-1],"stats3":stats_3[-1]},index = [img_index])
+        datas = pd.concat([datas,data], sort = False)
+        
+        cv.imwrite(out_directory + str(img_index) + ".png", poi)
+        img_index+=1
+        
+    score_impression = 1-np.array(stats_0)
+    
+    text = "BATCH NUMBER : "  + str(batch_number) + "\n"
+    text += "PROBA SCORE : " +  str(proba_score) + "\n"
+    text += "IMPRESSION SCORE : " + str(score_impression) + "\n   , mean : "+ str(np.mean(score_impression)) + "\n"
+    text += "NO WHITE : " + str(stats_1) + "\n"
+    text += "NO WHITE AND BLACK: " + str(stats_2) + "\n"
+    
+    
+    
+    if (score_impression < 0.48).any() or np.mean(score_impression) < 0.55:
+          
+        text += "test not passed"
+        fig, axs = plt.subplots(2)
+        
+        axs[0].imshow(imgs_cropped,'gray')
+        axs[1].text(0,0, text)
         plt.show() 
-        plt.imshow(masks[i],'gray')
+        
+
+        
+    else:
+        
+        text += "test passed"
+        
+        fig, axs = plt.subplots(2)
+        
+        axs[0].imshow(imgs_cropped,'gray')
+        axs[1].text(0,0, text)
         plt.show() 
 
-    
-        
-    score_impression = 0
-    
-    print("BATCH NUMBER : ", batch_number)
-    print("PROBA SCORE : ", proba_score)
-    print("IMPRESSION SCORE : ", score_impression)
-    
-    for img in imgs_cropped:
-        plt.imshow(img,'gray')
-        plt.show() 
+
     
     
+datas.to_csv(out_directory + "datas.csv", sep=";")       
     
-    
-    
+
+print(problem_filename)
     
     
     
