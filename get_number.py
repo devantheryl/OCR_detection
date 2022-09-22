@@ -17,10 +17,6 @@ import cv2 as cv
 import random 
 import numpy as np
 
-
-
-
-
 from sklearn.metrics import accuracy_score
 from PIL import Image, ImageOps, ImageEnhance
 
@@ -33,7 +29,6 @@ from tensorflow.keras.utils import to_categorical
 import tensorflow_datasets as tfds
 import seaborn as sns
 from tensorflow.keras.preprocessing.image import load_img, img_to_array, array_to_img, ImageDataGenerator
-
 
 
 def get_number_from_image_POI(model,POIs):

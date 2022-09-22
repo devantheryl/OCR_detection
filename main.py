@@ -30,6 +30,7 @@ from tensorflow.keras.utils import to_categorical
 import tensorflow_datasets as tfds
 import seaborn as sns
 from tensorflow.keras.preprocessing.image import load_img, img_to_array, array_to_img, ImageDataGenerator
+import time 
 
 
 """
@@ -72,8 +73,10 @@ datas = pd.DataFrame(data = None, columns=("number", "proba", "stats0", "stats1"
 img_index = 0
 out_directory = "dataset/production_08.09.22/"
 
+
+
 for filename in f:
-    
+    start = time.time()
     img_number = filename.split("img")[1][0]
     #GET ALL RELEVANT INFORMATION FROM IMAGE
     
@@ -126,27 +129,29 @@ for filename in f:
     
     
     
-    if (score_impression < 0.48).any() or np.mean(score_impression) < 0.55:
+    if (score_impression < 0.48).any() or np.mean(score_impression) < 0.52:
           
         text += "test not passed"
+        """
         fig, axs = plt.subplots(2)
         
         axs[0].imshow(imgs_cropped,'gray')
         axs[1].text(0,0, text)
         plt.show() 
-        
+        """
 
         
     else:
         
         text += "test passed"
-        
+        """
         fig, axs = plt.subplots(2)
         
         axs[0].imshow(imgs_cropped,'gray')
         axs[1].text(0,0, text)
         plt.show() 
-
+        """
+    print("took : ", time.time() - start)
 
     
     
