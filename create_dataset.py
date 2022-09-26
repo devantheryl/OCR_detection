@@ -43,7 +43,7 @@ import time
 LOAD THE DEEP LEARNING MODEL
 """
 
-checkpoint_path = "model/training_real_number_only_1/cp.ckpt"
+checkpoint_path = "model/training_real_number_only_2/cp.ckpt"
 checkpoint_dir = os.path.dirname(checkpoint_path)
 
 latest = tf.train.latest_checkpoint(checkpoint_dir)
@@ -63,7 +63,8 @@ model.load_weights(latest)
 """
 GET ALL THE FILE IN A FOLDER
 """
-folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/production_22.09.22_22-015675/"
+
+folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/production_26.09.22_22-015716/"
 
 f = []
 for (dirpath, dirnames, filenames) in walk(folder):
@@ -81,7 +82,7 @@ datas = pd.DataFrame(data = None, columns=("number", "proba", "stats0", "stats1"
 img_index = 0
 out_directory = "dataset/production_22.09.22/"
 
-batch_number = [2,2,0,1,5,6,7,5]
+batch_number = np.array([2,2,0,1,5,7,1,6])
 
 for filename in f:
     print(filename)
@@ -95,6 +96,7 @@ for filename in f:
         
         #predict the classes
         
+        
         classes, probas = get_number.get_number_from_image_POI(model,POIs_total_th)
         
         
@@ -102,53 +104,51 @@ for filename in f:
         proba_score = [probas[i,classe] for i, classe in enumerate(classes)]
         
         
-        for r in rectangles:
+        for _,r in rectangles.items():
             img_resized = cv.rectangle(img_resized, (r[0],r[1]), (r[0]+r[2],r[1]+r[3]),(255,0,0),2)
       
         
-       
-        if len(classes) >=4:
-                        
-            first_second = False
-            batch_number_ok = True
-            for i in range(-1,-5,-1):
-                if classes[i] != batch_number[i]:
-                    batch_number_ok = False
+        
+        if len(classes) >=3:
+            
+            classes_str_first = str(classes[:3]).strip("[]")
+            classes_str_second = str(classes[-5:]).strip("[]")
+            batch_number_str = str(batch_number).strip("[]")
+            if classes_str_first in batch_number_str or classes_str_second in batch_number_str :
+                batch_number_ok = True
+            else:
+                batch_number_ok = False
+            
                     
-            """
-            fig, axs = plt.subplots(2)
-            
-            axs[0].imshow(img_resized,'gray')
-            axs[1].text(0,0, filename +"\n"+ str(classes))
-    
-            plt.show()
-            """
-            
+            if batch_number_ok == False:
+                fig, axs = plt.subplots(2)
+                
+                axs[0].imshow(img_resized,'gray')
+                axs[1].text(0,0, filename +"\n"+ str(classes))
+        
+                plt.show()
             
             
-            for i,(_, poi) in enumerate(POIs_total_img.items()):
+            
+            
+            for i,(_, poi) in enumerate(POIs_total_th.items()):
                 
                
-                poi_th = cv.adaptiveThreshold(poi,255,cv.ADAPTIVE_THRESH_MEAN_C,cv.THRESH_BINARY,49 + (i*8),18 -2*i)
+                poi_blurred = cv.GaussianBlur(poi,(3,7),0)
+                _,poi_blurred_th = cv.threshold(poi_blurred,240,255,cv.THRESH_BINARY)
                 
                                 
-                poi_no_white = poi_th[poi_th<1]
-                
-                text = str(len(poi_no_white)/len(poi)) + "\n"
+       
+                text = filename
                 
                 
                 """
                 fig, axs = plt.subplots(2)
-                axs[0].imshow(poi_th,'gray')
+                axs[0].imshow(poi_blurred_th,'gray')
                 axs[1].text(0,0, text)
                 """
         
-               
-            
-            
-            
-            
-            
+
             
         else:
             

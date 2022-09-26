@@ -76,13 +76,13 @@ def train_model():
     )
     """
     
-    checkpoint_path = "model/training_real_number_only_1/cp-{epoch:04d}.ckpt"
+    checkpoint_path = "model/training_real_number_only_2/cp-{epoch:04d}.ckpt"
     checkpoint_dir = os.path.dirname(checkpoint_path)
     
     cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_path,
                                                  save_weights_only=True,
                                                  verbose=1,
-                                                 save_freq = 70)
+                                                 save_freq = 50)
     
     model = Sequential()
     model.add(ResNet50(include_top = False, pooling = 'avg', weights = 'imagenet'))
@@ -107,7 +107,7 @@ def train_model():
 
 train_model()
 
-checkpoint_path = "model/training_real_number_only_1/cp.ckpt"
+checkpoint_path = "model/training_real_number_only_2/cp.ckpt"
 checkpoint_dir = os.path.dirname(checkpoint_path)
 
 

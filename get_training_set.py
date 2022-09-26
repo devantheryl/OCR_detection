@@ -20,12 +20,14 @@ import numpy as np
 
 def create_get_dataset(train_test = 0.8):
     # keep in mind that open CV loads images as BGR not RGB
-    folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/numbers/img_number0"
+    number = "9"
+    folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/numbers/img_number" + number + "/"
     
     output_dir = "dataset/"
     
     test_nbr = 0
     train_nbr = 0
+    img_number = 0
     
     """
     create all datasetDir
@@ -36,16 +38,13 @@ def create_get_dataset(train_test = 0.8):
             os.makedirs(path)
         except:
             print ("Creation of the directory %s failed" % path)
-        path = output_dir + "test/" + str(i)
-        try:
-            os.makedirs(path)
-        except:
-            print ("Creation of the directory %s failed" % path)
+
         path = output_dir + "val/" + str(i)
         try:
             os.makedirs(path)
         except:
             print ("Creation of the directory %s failed" % path)
+    
     
     f = []
     for (dirpath, dirnames, filenames) in walk(folder):
@@ -53,83 +52,40 @@ def create_get_dataset(train_test = 0.8):
         break
     
     for filename in f:
-        split = filename.split("_")[1].split(".")[0]
-        batch_numbers.append(split)
     
-    batch_numbers = [*set(batch_numbers)]
-    
-    dataset = {}
-    for i in range(10):
-        dataset[str(i)] = []
-    
-    img_number = 0
-    for batch_number in batch_numbers:
-        number = batch_number.split("-")[0]
-        
+        img = cv.rotate(cv.imread(folder + filename), cv.ROTATE_180)
         rectangles,imgs_cropped, img_resized, imgs_th, POIs_total_th, POIs_total_img_resized, POIs_total_img = ocr.find_numbers_positions(img)
         
         
-        
-        imgs_test = imgs.copy()
-        
-        
-        for rectangle in rectangles[0]:
-            x,y,w,h = rectangle    
-            cv.rectangle(imgs[0],(x,y),(x+w,y+h),(255,255,0),2)
-            
-        for rectangle in rectangles[1]:
-            x,y,w,h = rectangle    
-            cv.rectangle(imgs[1],(x,y),(x+w,y+h),(255,255,0),2)
+        if filename.split("_")[1] == "True":
+            first = "1"
+        else:
+            first = "2"
             
         
-        """
-        plt.imshow(imgs[0],'gray')
-        plt.show()
-    
-        plt.imshow(imgs_th[0],'gray')
-        plt.show()
-        
-        plt.imshow(imgs[1],'gray')
-        plt.show()  
-    
-        plt.imshow(imgs_th[1],'gray')
-        plt.show()
-        
-        
-        for rectangle in tests[0]:
-            x,y,w,h = rectangle    
-            cv.rectangle(imgs_test[0],(x,y),(x+w,y+h),(255,255,0),2)
+        for i,(key, poi) in enumerate(POIs_total_th.items()):
             
-        for rectangle in tests[1]:
-            x,y,w,h = rectangle    
-            cv.rectangle(imgs_test[1],(x,y),(x+w,y+h),(255,255,0),2)
-         
-        plt.imshow(imgs_test[0],'gray')
-        plt.show()
-        
-        plt.imshow(imgs_test[1],'gray')
-        plt.show()
-        """
-        
-        
-        for i, poi in enumerate(POIs_total_th):
+            poi_blurred = cv.GaussianBlur(poi,(3,7),0)
+            _,poi_blurred_th = cv.threshold(poi_blurred,240,255,cv.THRESH_BINARY)
             
-            for key, value in poi.items():
-                filename = number + "/"  + str(img_number) +".png"
+            x,y,w,h = rectangles[key]
+            
+            
+            filename = str(img_number)+"_"+number + ".png"
                 
-                rand = np.random.uniform(0, 1)
-                if rand < train_test:
-                    directory = output_dir + "train/"
-                    train_nbr +=1
-                else:
-                    directory = output_dir + "val/"
-                    test_nbr += 1
+            rand = np.random.uniform(0, 1)
+            if rand < train_test:
+                directory = output_dir + "train/" 
+                train_nbr +=1
+            else:
+                directory = output_dir + "val/"
+                test_nbr += 1
                     
                 
-                cv.imwrite(directory + filename, value)
-                
-
-                img_number += 1
+            cv.imwrite(directory + number + "/" + filename, poi_blurred_th)
+            print(img_number)
+    
+            img_number += 1
         
                 
     print(train_nbr,test_nbr,img_number)

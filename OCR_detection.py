@@ -5,8 +5,7 @@ Created on Fri Aug 12 13:57:23 2022
 @author: LDE
 """
 
-import pytesseract
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
+
 import cv2 as cv
 import sys
 import os
@@ -36,9 +35,9 @@ def intersects(box1, box2):
 
 
 def cropp_resize(img):
-    h_cropped_low = int(img.shape[0] * 0.55)
-    h_cropped_high = int(img.shape[0] * 1)   
-    w_cropped_low = int(img.shape[1] * 0)
+    h_cropped_low = int(img.shape[0] * 0.45)
+    h_cropped_high = int(img.shape[0] * 0.85)   
+    w_cropped_low = int(img.shape[1] * 0.2)
     w_cropped_high = int(img.shape[1] * 0.9)
     
     img_cropped = img[h_cropped_low:h_cropped_high, w_cropped_low:w_cropped_high]
@@ -55,9 +54,8 @@ def cropp_resize(img):
 
 def find_numbers_positions(img):
     
-    imgs_th = []
     
-    merged_rectangles = []
+    
     
     
     img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
@@ -80,6 +78,8 @@ def find_numbers_positions(img):
     POIs_th = {}
     POIs_img_resized = {}
     POIs_img = {}
+    POI_blurred_th = {}
+    merged_rectangles = {}
     
     rectangles = []
     th_plot = th.copy()
@@ -186,12 +186,12 @@ def find_numbers_positions(img):
             POIs_img[x] = POI_img
             
             
-            merged_rectangles.append((x,y,w,h))
+            merged_rectangles[x] = (x,y,w,h)
     
     POIs_th = collections.OrderedDict(sorted(POIs_th.items()))
     POIs_img_resized = collections.OrderedDict(sorted(POIs_img_resized.items()))
     POIs_img = collections.OrderedDict(sorted(POIs_img.items()))
-    
+    merged_rectangles = collections.OrderedDict(sorted(merged_rectangles.items()))
     
 
           
