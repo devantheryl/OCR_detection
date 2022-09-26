@@ -30,12 +30,6 @@ import seaborn as sns
 from tensorflow.keras.preprocessing.image import load_img, img_to_array, array_to_img, ImageDataGenerator
 
 
-def change_size(img):
-    img = array_to_img(img, scale=False) #returns PIL Image
-    img = img.resize((75, 75)) #resize image
-    img = img.convert(mode='RGB') #makes 3 channels
-    arr = img_to_array(img) #convert back to array
-    return arr.astype(np.float64)
 
 (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
 

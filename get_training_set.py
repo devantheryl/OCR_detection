@@ -20,8 +20,7 @@ import numpy as np
 
 def create_get_dataset(train_test = 0.8):
     # keep in mind that open CV loads images as BGR not RGB
-    folder = "Tests_Analyse/Numeros_new_police/Valeurs_0a9/"
-    batch_numbers = []
+    folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/numbers/img_number0"
     
     output_dir = "dataset/"
     
@@ -67,7 +66,7 @@ def create_get_dataset(train_test = 0.8):
     for batch_number in batch_numbers:
         number = batch_number.split("-")[0]
         
-        numbers, rectangles,tests, imgs, imgs_th, POIs_total_th, POIs_total_img,_ = ocr.find_numbers_positions(folder, batch_number)
+        rectangles,imgs_cropped, img_resized, imgs_th, POIs_total_th, POIs_total_img_resized, POIs_total_img = ocr.find_numbers_positions(img)
         
         
         

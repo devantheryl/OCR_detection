@@ -12,7 +12,6 @@ os.chdir("C:/Users/LDE/Prog/OCR_detection")
 
 
 import OCR_detection as ocr
-import detect_quality as quality
 import get_number
 import cv2 as cv
 from os import walk
@@ -56,7 +55,7 @@ model.load_weights(latest)
 """
 GET ALL THE FILE IN A FOLDER
 """
-folder = "Tests_Analyse/production_08.09.22/"
+folder = "Tests_Analyse/production_22.09.22/"
 
 f = []
 for (dirpath, dirnames, filenames) in walk(folder):
@@ -71,16 +70,19 @@ problem_filename = []
 
 datas = pd.DataFrame(data = None, columns=("number", "proba", "stats0", "stats1", "stats2", "stats3"))
 img_index = 0
-out_directory = "dataset/production_08.09.22/"
+out_directory = "dataset/production_22.09.22/"
 
 
 
 for filename in f:
     start = time.time()
-    img_number = filename.split("img")[1][0]
+    
     #GET ALL RELEVANT INFORMATION FROM IMAGE
     
-    numbers, rectangles,imgs_cropped, imgs, imgs_th, POIs_total_th, POIs_total_img_resized, POIs_total_img = ocr.find_numbers_positions(folder, filename, img_number)
+    rectangles,imgs_cropped, imgs, imgs_th, POIs_total_th, POIs_total_img_resized, POIs_total_img = ocr.find_numbers_positions(folder, filename, 0)
+    
+    
+    
     
     #predict the classes
     classes, probas = get_number.get_number_from_image_POI(model,POIs_total_th)
@@ -90,7 +92,7 @@ for filename in f:
     
     proba_score = [probas[i,classe] for i, classe in enumerate(classes)]
     
-    maskeds, masks = quality.get_masked_POI(POIs_total_img)
+    maskeds, masks = ocr.get_masked_POI(POIs_total_img)
     
     
     stats_0 = []
@@ -116,11 +118,11 @@ for filename in f:
         data = pd.DataFrame({"number" :batch_number[i],"proba": proba_score[i],"stats0": stats_0[-1],"stats1":stats_1[-1],"stats2" : stats_2[-1],"stats3":stats_3[-1]},index = [img_index])
         datas = pd.concat([datas,data], sort = False)
         
-        cv.imwrite(out_directory + str(img_index) + ".png", poi)
+        #cv.imwrite(out_directory + str(img_index) + ".png", poi)
         img_index+=1
         
     score_impression = 1-np.array(stats_0)
-    
+    print(batch_number)
     text = "BATCH NUMBER : "  + str(batch_number) + "\n"
     text += "PROBA SCORE : " +  str(proba_score) + "\n"
     text += "IMPRESSION SCORE : " + str(score_impression) + "\n   , mean : "+ str(np.mean(score_impression)) + "\n"
@@ -129,7 +131,7 @@ for filename in f:
     
     
     
-    if (score_impression < 0.48).any() or np.mean(score_impression) < 0.52:
+    if (score_impression < 0.44).any() or np.mean(score_impression) < 0.52:
           
         text += "test not passed"
         """
@@ -137,8 +139,9 @@ for filename in f:
         
         axs[0].imshow(imgs_cropped,'gray')
         axs[1].text(0,0, text)
-        plt.show() 
+        plt.show()
         """
+        pass
 
         
     else:
