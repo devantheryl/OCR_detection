@@ -35,10 +35,10 @@ def intersects(box1, box2):
 
 
 def cropp_resize(img):
-    h_cropped_low = int(img.shape[0] * 0.45)
-    h_cropped_high = int(img.shape[0] * 0.85)   
-    w_cropped_low = int(img.shape[1] * 0.2)
-    w_cropped_high = int(img.shape[1] * 0.9)
+    h_cropped_low = int(img.shape[0] * 0.39)
+    h_cropped_high = int(img.shape[0] * 0.57)   
+    w_cropped_low = int(img.shape[1] * 0.15)
+    w_cropped_high = int(img.shape[1] * 0.7)
     
     img_cropped = img[h_cropped_low:h_cropped_high, w_cropped_low:w_cropped_high]
     
@@ -200,8 +200,30 @@ def find_numbers_positions(img):
 
   
 
-
+def get_impression_score(prob,ref, plot = False):   
     
+    equ = cv.equalizeHist(prob)
+    
+    equ_th = cv.adaptiveThreshold(equ,255,cv.ADAPTIVE_THRESH_MEAN_C,cv.THRESH_BINARY,11,0)
+    equ_masked_th = cv.bitwise_and(equ_th,equ_th,mask = ref)
+    
+    
+    d = (1-np.sum(equ_masked_th)/np.sum(ref))*100
+    d1 = cv.matchShapes(equ_masked_th,ref,1,0.0)*100
+    
+    if plot:
+        fig, ax = plt.subplots(1,5,figsize = (15,4))
+        
+        ax[0].imshow(prob,'gray')
+        ax[1].imshow(equ,'gray')
+        ax[2].imshow(equ_th,'gray')
+        ax[3].imshow(equ_masked_th,'gray')
+    
+        ax[4].text(0,0.5,str(d) + "\n" + str(d1))
+        
+        fig.show()
+    
+    return d,d1,equ_masked_th
 
 
 

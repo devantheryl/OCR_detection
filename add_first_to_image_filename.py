@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 """
+Created on Thu Sep 29 13:01:46 2022
+
+@author: LDE
+"""
+
+# -*- coding: utf-8 -*-
+"""
 Created on Fri Sep 23 10:01:15 2022
 
 @author: LDE
@@ -64,7 +71,7 @@ model.load_weights(latest)
 GET ALL THE FILE IN A FOLDER
 """
 
-folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/production_27.09.22_22-015676/"
+folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/production_26.09.22_22-015716_old/"
 
 f = []
 for (dirpath, dirnames, filenames) in walk(folder):
@@ -79,15 +86,16 @@ GO TROUGH ALL THE FILES
 img_index = 0
 out_directory = "dataset/production_22.09.22/"
 
-batch_number = np.array([2,2,0,1,5,6,7,6])
-
+batch_number = np.array([2,2,0,1,5,7,1,6])
+err_img = []
 for filename in f:
     print(filename)
     start = time.time()
     
-    first = True if filename.split("_")[1].split(".")[0] == "True" else False
+    
     
     #GET ALL RELEVANT INFORMATION FROM IMAGE
+    img_to_save = cv.imread(folder + filename)
     img = cv.rotate(cv.imread(folder + filename), cv.ROTATE_180)
     rectangles,imgs_cropped, img_resized, imgs_th, POIs_total_th, POIs_total_img_resized, POIs_total_img = ocr.find_numbers_positions(img)
     
@@ -108,75 +116,38 @@ for filename in f:
         
         if len(classes) >=3:
             
-            if first:
-                classes_prob = str(classes[:3]).strip("[]")
-                batch_number_ref = str(batch_number[:3]).strip("[]")
-                iter_dict = list(POIs_total_img_resized)[0:3]
-            else:
-                classes_prob = str(classes[-5:]).strip("[]")
-                batch_number_ref = str(batch_number[-5:]).strip("[]")
-                iter_dict = list(POIs_total_img_resized)[-5:]
+            
+            classes_prob_first = str(classes[1:3]).strip("[]")
+            batch_number_ref_first = str(batch_number[1:3]).strip("[]")
+            
+       
+            classes_prob_second = str(classes[-3:]).strip("[]")
+            batch_number_ref_second = str(batch_number[-3:]).strip("[]")
+           
+            
+            directory = "Tests_Analyse/production_26.09.22_22-015716_new/"
+            file = filename.split(".")[0]
+            
+            writed = False
+            if classes_prob_first in batch_number_ref_first:
+                #cv.imwrite(directory + file + "_True" + ".png", img_to_save)
+                writed = True
+            if classes_prob_second in batch_number_ref_second:
+                #cv.imwrite(directory + file + "_False" + ".png", img_to_save)
+                writed = True
                 
-            
-            if classes_prob in batch_number_ref:
-                batch_number_ok = True
-            else:
-                batch_number_ok = False
-            
-                    
-            if batch_number_ok == False:
-                
-                fig, axs = plt.subplots(2)
-                
-                axs[0].imshow(img_resized,'gray')
-                axs[1].text(0,0, filename +"\n"+ str(classes))
-        
-                plt.show()
-            
-            
-            
-            
-            
-            
-            for i,key in enumerate(iter_dict):
-                
-                poi = POIs_total_img_resized[key]
-                shape_mean_th_not = cv.imread("number_ref/ref_" + str(classes[-5:][i]) + ".png",0)
-    
-                
-                prob = cv.resize(poi, (40,70), interpolation = cv.INTER_AREA)
-                d1,d2,equ_masked_th = ocr.get_impression_score(prob,shape_mean_th_not, False)    
-                
-                if d1 < 78:
-                    fig, axs = plt.subplots(3)
-                    axs[0].imshow(poi,'gray')
-                    axs[1].text(0,0, str(d1) + "\n" + str(d2) + "\n" + filename)
-                    axs[2].imshow(equ_masked_th,'gray')
-            
-                    plt.show()
-               
-                
-            
- 
-
-            
+            if writed == False:
+                err_img.append(filename)
         else:
-            
-            fig, axs = plt.subplots(2)
-            
-            axs[0].imshow(img_resized,'gray')
-            axs[1].text(0,0, filename+ "  quality sucks")
-    
-            plt.show()   
-            
+            err_img.append(filename)
     else:
-        fig, axs = plt.subplots(2)
+        err_img.append(filename)
+                    
             
-        axs[0].imshow(img_resized,'gray')
-        axs[1].text(0,0, filename + "no batch number")
+            
+            
+            
 
-        plt.show()   
-        
 
     
     
