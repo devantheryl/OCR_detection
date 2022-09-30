@@ -92,7 +92,7 @@ def get_mean_shape(query,img_shape):
     
 img_shape = (40,70)
 df = get_number_df()
-number = "9"
+number = "0"
 query = df[((df.number == number))]  #& (df["first"] == True))]     
 shape_mean_th_not = cv.imread("number_ref/ref_" + number + ".png",0)
     

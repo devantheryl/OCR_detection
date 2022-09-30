@@ -76,17 +76,17 @@ def train_model():
     )
     """
     
-    checkpoint_path = "model/training_real_number_only_2/cp-{epoch:04d}.ckpt"
+    checkpoint_path = "model/training_real_number_only_3/cp-{epoch:04d}.ckpt"
     checkpoint_dir = os.path.dirname(checkpoint_path)
     
     cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_path,
                                                  save_weights_only=True,
                                                  verbose=1,
-                                                 save_freq = 50)
+                                                 save_freq = 60)
     
     model = Sequential()
     model.add(ResNet50(include_top = False, pooling = 'avg', weights = 'imagenet'))
-    model.add(Dense(512,activation = 'relu'))
+    model.add(Dense(128,activation = 'relu'))
     model.add(Dense(10,activation = 'softmax'))
     
     #set resnet layer not trainable
@@ -96,7 +96,7 @@ def train_model():
     
     model.compile(optimizer = "Adam", loss = 'categorical_crossentropy', metrics = ["accuracy"])
     
-    model.fit(train_iterator, epochs = 400, validation_data=val_iterator, callbacks=[cp_callback])
+    model.fit(train_iterator, epochs = 100, validation_data=val_iterator, callbacks=[cp_callback])
     
     print(model.evaluate(val_iterator))
 
@@ -107,7 +107,7 @@ def train_model():
 
 train_model()
 
-checkpoint_path = "model/training_real_number_only_2/cp.ckpt"
+checkpoint_path = "model/training_real_number_only_3/cp.ckpt"
 checkpoint_dir = os.path.dirname(checkpoint_path)
 
 
@@ -116,7 +116,7 @@ latest = tf.train.latest_checkpoint(checkpoint_dir)
 # Create a new model instance
 model = Sequential()
 model.add(ResNet50(include_top = False, pooling = 'avg', weights = 'imagenet'))
-model.add(Dense(512,activation = 'relu'))
+model.add(Dense(128,activation = 'relu'))
 model.add(Dense(10,activation = 'softmax'))
 
 #set resnet layer not trainable
