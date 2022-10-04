@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 """
+Created on Tue Oct  4 10:35:16 2022
+
+@author: LDE
+"""
+
+# -*- coding: utf-8 -*-
+"""
 Created on Fri Sep 23 10:01:15 2022
 
 @author: LDE
@@ -57,28 +64,52 @@ model = keras.models.load_model(checkpoint_path)
 GET ALL THE FILE IN A FOLDER
 """
 
-folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/production_29.09.22_22-015715/"
+folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/non-conforme/"
 
-f = []
-for (dirpath, dirnames, filenames) in walk(folder):
-    f = [file for file in filenames if ".png" in file]
-    break
-
+f = {'10_False.png' : np.array([6,6,6,6,6,6,6,6]),
+ '11_True.png' : np.array([7,7,7,7,7,7,7,7]),
+ '12_False.png' : np.array([8,8,8,8,8,8,8,8]),
+ '13_True.png' : np.array([9,9,9,9,9,9,9,9]),
+ '14_False.png' : np.array([8,8,8,8,8,8,8,8]),
+ '15_True - Copie.png' : np.array([8,8,8,8,8,8,8,8]),
+ '15_True.png' : np.array([8,8,8,8,8,8,8,8]),
+ '16_False.png' : np.array([8,8,8,8,8,8,8,8]),
+ '17_True.png' : np.array([8,8,8,8,8,8,8,8]),
+ '18_False - Copie (2).png' : np.array([8,8,8,8,8,8,8,8]),
+ '18_False - Copie (3).png' : np.array([8,8,8,8,8,8,8,8]),
+ '18_False.png' : np.array([8,8,8,8,8,8,8,8]),
+ '2_False_.png' : np.array([1,1,1,1,1,1,1,1]),
+ '300_False.png' : np.array([2,2,0,1,5,0,1,5]),
+ '302_False.png' : np.array([2,2,0,1,5,1,1,5]),
+ '303_True.png' : np.array([2,2,2,1,5,0,1,5]),
+ '304_False.png' : np.array([2,2,0,1,5,3,1,5]),
+ '306_False.png' : np.array([2,2,0,1,5,4,1,5]),
+ '312_False.png' : np.array([2,2,0,1,5,5,1,5]),
+ '313_True.png' : np.array([2,2,6,1,5,0,1,5]),
+ '325_True.png' : np.array([2,2,7,1,5,0,1,5]),
+ '326_False.png' : np.array([2,2,0,1,5,8,1,5]),
+ '338_False.png' : np.array([2,2,0,1,5,9,1,5]),
+ '3_True.png' : np.array([0,0,0,0,0,0,0,0]),
+ '5_True.png' : np.array([2,2,2,2,2,2,2,2]),
+ '6_False.png' : np.array([2,2,2,2,2,2,2,2]),
+ '7_True.png' : np.array([3,3,3,3,3,3,3,3]),
+ '8_False.png' : np.array([4,4,4,4,4,4,4,4]),
+ '9_True.png' : np.array([5,5,5,5,5,5,5,5]),
+ 'TEST2_False.png' : np.array([2,2,0,1,5,6,7,6]),
+ 'TEST_True.png' : np.array([2,2,0,1,5,6,7,6])}
 
 """
 GO TROUGH ALL THE FILES
 """
-write_out = False
-img_number = 10000
-out_directory = "dataset/production_22.09.22/"
-output_dir = "dataset/"
+
+
 
 batch_number = np.array([2,2,0,1,5,7,1,5])
 
 
 problem_file = ["6849_False.png"]
 
-for filename in f:
+for filename,batch_number in f.items():
     print(filename)
     start = time.time()
     
@@ -96,41 +127,7 @@ for filename in f:
     
     
     if len(POIs_total_img_resized):
-        if write_out:
-            poi_to_save = []
-            for i,(key,poi) in enumerate(POIs_total_th.items()):
-                
-                poi_to_save.append(poi)
-                
-            if first:
-                poi_to_save = poi_to_save[:3]
-                for number,p in enumerate(poi_to_save):
-                    filename = str(batch_number[number]) + "/"  + str(img_number) + ".png"
-                        
-                    rand = np.random.uniform(0, 1)
-                    if rand < 0.8:
-                        directory = output_dir + "train/" 
-                        img_number +=1
-                    else:
-                        directory = output_dir + "val/"
-                        img_number += 1
-                            
-                        
-                    cv.imwrite(directory  + filename, p)
-            else:
-                poi_to_save = poi_to_save[-5:]
-                for number,p in enumerate(poi_to_save):
-        
-                    filename = str(batch_number[3+number]) + "/"  + str(img_number) + ".png"
-                        
-                    rand = np.random.uniform(0, 1)
-                    if rand < 0.8:
-                        directory = output_dir + "train/" 
-                        img_number +=1
-                    else:
-                        directory = output_dir + "val/"
-                        img_number += 1 
-                    cv.imwrite(directory  + filename, p)
+
         
         #predict the classes
         classes, probas = get_number.get_number_from_image_POI(model,POIs_total_th)
@@ -185,7 +182,7 @@ for filename in f:
                     shape_mean_th_not = cv.imread("number_ref/ref_" + str(classes[-5:][i]) + ".png",0)   
                 
                 prob = cv.resize(poi, (40,70), interpolation = cv.INTER_AREA)
-                d1,d2,equ_masked_th = ocr.get_impression_score(prob,shape_mean_th_not, True)    
+                d1,d2,equ_masked_th = ocr.get_impression_score(prob,shape_mean_th_not, False)    
                 
                 if d1 < 70:
                     fig, axs = plt.subplots(3)

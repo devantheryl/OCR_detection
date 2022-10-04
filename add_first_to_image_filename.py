@@ -50,7 +50,7 @@ import time
 LOAD THE DEEP LEARNING MODEL
 """
 
-checkpoint_path = "model/training_real_number_only_2/cp.ckpt"
+checkpoint_path = "model/training_real_number_only_3_128_10/cp.ckpt"
 checkpoint_dir = os.path.dirname(checkpoint_path)
 
 latest = tf.train.latest_checkpoint(checkpoint_dir)
@@ -58,7 +58,7 @@ latest = tf.train.latest_checkpoint(checkpoint_dir)
 # Create a new model instance
 model = Sequential()
 model.add(ResNet50(include_top = False, pooling = 'avg', weights = 'imagenet'))
-model.add(Dense(512,activation = 'relu'))
+model.add(Dense(128,activation = 'relu'))
 model.add(Dense(10,activation = 'softmax'))
 
 
@@ -71,7 +71,7 @@ model.load_weights(latest)
 GET ALL THE FILE IN A FOLDER
 """
 
-folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/production_26.09.22_22-015716_old/"
+folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/production_29.09.22_22-015715_old/"
 
 f = []
 for (dirpath, dirnames, filenames) in walk(folder):
@@ -86,7 +86,7 @@ GO TROUGH ALL THE FILES
 img_index = 0
 out_directory = "dataset/production_22.09.22/"
 
-batch_number = np.array([2,2,0,1,5,7,1,6])
+batch_number = np.array([2,2,0,1,5,7,1,5])
 err_img = []
 for filename in f:
     print(filename)
@@ -125,15 +125,15 @@ for filename in f:
             batch_number_ref_second = str(batch_number[-3:]).strip("[]")
            
             
-            directory = "Tests_Analyse/production_26.09.22_22-015716_new/"
+            directory = "Tests_Analyse/production_29.09.22_22-015715/"
             file = filename.split(".")[0]
             
             writed = False
             if classes_prob_first in batch_number_ref_first:
-                #cv.imwrite(directory + file + "_True" + ".png", img_to_save)
+                cv.imwrite(directory + file + "_True" + ".png", img_to_save)
                 writed = True
             if classes_prob_second in batch_number_ref_second:
-                #cv.imwrite(directory + file + "_False" + ".png", img_to_save)
+                cv.imwrite(directory + file + "_False" + ".png", img_to_save)
                 writed = True
                 
             if writed == False:
@@ -148,7 +148,7 @@ for filename in f:
             
             
 
-
+print(err_img)
     
     
     
