@@ -71,7 +71,7 @@ model.load_weights(latest)
 GET ALL THE FILE IN A FOLDER
 """
 
-folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/production_29.09.22_22-015715_old/"
+folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/img/"
 
 f = []
 for (dirpath, dirnames, filenames) in walk(folder):
@@ -84,7 +84,7 @@ GO TROUGH ALL THE FILES
 """
 
 img_index = 0
-out_directory = "dataset/production_22.09.22/"
+out_directory = "Tests_Analyse/temp/"
 
 batch_number = np.array([2,2,0,1,5,7,1,5])
 err_img = []
@@ -125,15 +125,15 @@ for filename in f:
             batch_number_ref_second = str(batch_number[-3:]).strip("[]")
            
             
-            directory = "Tests_Analyse/production_29.09.22_22-015715/"
+
             file = filename.split(".")[0]
             
             writed = False
             if classes_prob_first in batch_number_ref_first:
-                cv.imwrite(directory + file + "_True" + ".png", img_to_save)
+                cv.imwrite(out_directory + file + "_True" + ".png", img_to_save)
                 writed = True
             if classes_prob_second in batch_number_ref_second:
-                cv.imwrite(directory + file + "_False" + ".png", img_to_save)
+                cv.imwrite(out_directory + file + "_False" + ".png", img_to_save)
                 writed = True
                 
             if writed == False:

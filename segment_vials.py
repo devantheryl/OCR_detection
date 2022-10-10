@@ -51,15 +51,15 @@ def get_POI_intensity(img_gray, crop_entry = True):
     
     #THRESHOLD
     if crop_entry:
-        img_cropped = img_gray[300:1000,370:1400]
+        img_cropped = img_gray[300:1000,340:1400]
     else:
         img_cropped = img_gray
     
     
     img_cropped_not = np.abs(img_cropped - 255)
-    _, img_cropped_th = cv.threshold(img_cropped,250,255,cv.THRESH_BINARY)
+    _, img_cropped_th = cv.threshold(img_cropped,254,255,cv.THRESH_BINARY)
     img_cropped_not_summed = np.sum(img_cropped_th,axis = 1)/max(np.sum(img_cropped_th,axis = 1)) * np.shape(img_cropped_th)[0]
-    img_cropped_not_summed[-1] = np.shape(img_cropped_th)[0]
+    #img_cropped_not_summed[-1] = np.shape(img_cropped_th)[0]
     
     
     controle_line_img_cropped = np.full(np.shape(img_cropped_not_summed)[0],100)
@@ -76,7 +76,7 @@ def get_POI_intensity(img_gray, crop_entry = True):
                max_x1 = idx_cropped[i-1]
                max_x2 = idx_cropped[i]
            else:
-               max_x1 = idx_cropped[i]
+               max_x1 = idx_cropped[0]
                max_x2 = 550
            
     if max_x2 ==0:
@@ -93,30 +93,54 @@ def get_POI_intensity(img_gray, crop_entry = True):
     edged = cv.Canny(th, 50, 100,L2gradient = True, apertureSize = 3)
     
     th_not = np.abs(th - 255)
-    img_gray_not = np.abs(img_gray-255)
+    row_of_zero = np.zeros((1,np.shape(th_not)[1]))
+    th_not = np.concatenate((row_of_zero,th_not,row_of_zero), axis = 0)
+    
     edged_summed = np.sum(th_not,axis = 1)/max(np.sum(th_not,axis = 1)) * np.shape(edged)[0]
+    edged_summed[0] = 0
     
-   
+    counter = 0
+    maybe_merge = False
+    first_point = 0
+
+    for i in range(1,len(edged_summed)):
+        diff = edged_summed[i] - edged_summed[i-1]
+        if diff < 0 and abs(diff) > 20:
+            first_point = i
+            maybe_merge = True
+            counter = 0
+        if maybe_merge:
+            counter += 1
+        if counter > 10:
+            counter = 0
+            maybe_merge = False
+        if (diff > 0 and abs(diff) > 20) and maybe_merge:
+            edged_summed[first_point: i+1] += 10
+            counter = 0
+            maybe_merge = False
+            
+            
+        
+        
     
+    x = np.array(range(np.shape(th_not)[0]))
     
-    x = np.array(range(np.shape(edged)[0]))
-    
-    controle_line_x = np.full(np.shape(edged)[0], 1)
+    controle_line_x = np.full(np.shape(th_not)[0], 1)
     
     idx  = np.argwhere(np.diff(np.sign(controle_line_x - edged_summed))).flatten()
 
     idx_OI = []
-    POI_x1=0
-    POI_x2=0
+    max_POI_x1=0
+    max_POI_x2=0
     for i in range(1,len(idx)):
        if abs(idx[i] - idx[i-1])> 100:
-           if np.sum(edged_summed[idx[i-1]:idx[i]]) > 5000:
-               POI_x1 = idx[i-1]
-               POI_x2 = idx[i]
+           if np.sum(edged_summed[idx[i-1]:idx[i]]) > 5000 and abs(idx[i] - idx[i-1]) > abs(max_POI_x1-max_POI_x2) :
+               max_POI_x1 = idx[i-1]
+               max_POI_x2 = idx[i]
     
     
 
-    POI_th_not = th_not[POI_x1:POI_x2+1,:]
+    POI_th_not = th_not[max_POI_x1:max_POI_x2+1,:]
     POI_th_not_summed = np.sum(POI_th_not,axis = 0)/max(np.sum(POI_th_not,axis = 0)) * np.shape(POI_th_not)[0] * 0.75
     
     controle_line_y = np.full(np.shape(POI_th_not)[1], 1)
@@ -130,17 +154,40 @@ def get_POI_intensity(img_gray, crop_entry = True):
            if np.sum(POI_th_not_summed[idy[i-1]:idy[i]]) > 3000:
                POI_y1 = idy[i-1]
                POI_y2 = idy[i]
-               POI_base = img_cropped_cropped[POI_x1:POI_x2+1, POI_y1:POI_y2+1]
+               POI_base = img_cropped_cropped[max_POI_x1:max_POI_x2+1, POI_y1:POI_y2+1]
+               
+               """
+               plt.imshow(POI_base)
+               plt.show()
+               """
                
                if POI_base.shape[0] > 180:
                    
                    POI_prob = POI_th_not[:, POI_y1:POI_y2+1]
-                   POI_summed = np.sum(POI_prob,axis = 1)/max(np.sum(POI_prob,axis = 1)) * np.shape(POI_prob)[0]
-                   POI_controle_line_x = np.full(np.shape(POI_prob)[0], 30)
+                   row_of_zero = np.zeros((2,np.shape(POI_prob)[1]))
+                   POI_prob = np.concatenate((row_of_zero,POI_prob,row_of_zero), axis = 0)
+                   POI_summed = np.sum(POI_prob,axis = 1)/max(np.sum(POI_prob,axis = 1)) * np.shape(POI_prob)[1]
+                   POI_controle_line_x = np.full(np.shape(POI_prob)[0], 1)
                    POI_idx  = np.argwhere(np.diff(np.sign(POI_controle_line_x - POI_summed))).flatten()
                    test = 0
                    
-                   POI = POI_base[POI_idx[0]:POI_idx[1],:]
+                   """
+                   POI_x_ = np.array(range(np.shape(POI_prob)[0]))
+                   plt.imshow(POI_prob,'gray')
+                   plt.plot(POI_summed,POI_x_)
+                   plt.plot(POI_controle_line_x, POI_x_, 'r-')
+                   plt.plot(POI_controle_line_x[POI_idx],POI_x_[POI_idx], 'ro')
+                   plt.show()
+                   """
+                   
+                   max_prob_x1 = 0
+                   max_prob_x2 = 0
+                   for j in range(1,len(POI_idx)):
+                       if abs(POI_idx[j]-POI_idx[j-1]) > abs(max_prob_x2-max_prob_x1):
+                           max_prob_x1 = POI_idx[j-1]
+                           max_prob_x2 = POI_idx[j]
+                   
+                   POI = POI_base[max_prob_x1:max_prob_x2,:]
                
                else:
                    POI = POI_base
@@ -168,6 +215,13 @@ def get_POI_intensity(img_gray, crop_entry = True):
     plt.imshow(img_cropped,'gray')
     plt.show()
     
+    
+    plt.imshow(img_cropped_th,'gray')
+    plt.plot(img_cropped_not_summed,x_cropped)
+    plt.plot(controle_line_img_cropped, x_cropped, 'r-')
+    plt.plot(controle_line_img_cropped[idx_cropped],x_cropped[idx_cropped], 'ro')
+    plt.show()
+    
     plt.imshow(blurred,'gray')
     plt.show()
     
@@ -175,11 +229,7 @@ def get_POI_intensity(img_gray, crop_entry = True):
     plt.show() 
 
     
-    plt.imshow(img_cropped_th,'gray')
-    plt.plot(img_cropped_not_summed,x_cropped)
-    plt.plot(controle_line_img_cropped, x_cropped, 'r-')
-    plt.plot(controle_line_img_cropped[idx_cropped],x_cropped[idx_cropped], 'ro')
-    plt.show()
+    
     
     plt.imshow(th_not,'gray')
     plt.plot(edged_summed,x)

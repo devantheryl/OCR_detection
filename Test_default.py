@@ -103,7 +103,6 @@ GO TROUGH ALL THE FILES
 """
 
 
-
 batch_number = np.array([2,2,0,1,5,7,1,5])
 
 
@@ -167,24 +166,22 @@ for filename,batch_number in f.items():
                 axs[1].text(0,0, filename +"\n"+ str(classes))
         
                 plt.show()
-            
-            
-            
-            
+            else:
+                print("ok")
             
             
             for i,key in enumerate(iter_dict):
                 
                 poi = POIs_total_img_resized[key]
                 if first:
-                    shape_mean_th_not = cv.imread("number_ref/ref_" + str(classes[:3][i]) + ".png",0)
+                    shape_mean_th_not = cv.imread("number_ref/ref_" + str(batch_number[:3][i]) + ".png",0)
                 else:
-                    shape_mean_th_not = cv.imread("number_ref/ref_" + str(classes[-5:][i]) + ".png",0)   
+                    shape_mean_th_not = cv.imread("number_ref/ref_" + str(batch_number[-5:][i]) + ".png",0)   
                 
                 prob = cv.resize(poi, (40,70), interpolation = cv.INTER_AREA)
                 d1,d2,equ_masked_th = ocr.get_impression_score(prob,shape_mean_th_not, False)    
                 
-                if d1 < 70:
+                if d1 < 79:
                     fig, axs = plt.subplots(3)
                     axs[0].imshow(poi,'gray')
                     axs[1].text(0,0, str(d1) + "\n" + str(d2) + "\n" + filename)

@@ -57,7 +57,7 @@ model = keras.models.load_model(checkpoint_path)
 GET ALL THE FILE IN A FOLDER
 """
 
-folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/production_29.09.22_22-015715/"
+folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/production_06.10.22_22-015556/"
 
 f = []
 for (dirpath, dirnames, filenames) in walk(folder):
@@ -73,16 +73,20 @@ img_number = 10000
 out_directory = "dataset/production_22.09.22/"
 output_dir = "dataset/"
 
-batch_number = np.array([2,2,0,1,5,7,1,5])
+batch_number = np.array([2,2,0,1,5,5,5,6])
 
 
-problem_file = ["6849_False.png"]
+problem_file = ['11055_True-batch_number_False.png', '12230_True-no_batch_number.png', '12310_True-no_batch_number.png', '14019_True-no_batch_number.png', '14223_True-no_batch_number.png', '14271_True-no_batch_number.png', '14415_True-no_batch_number.png', '16258_False-batch_number_False.png', '17394_True-no_batch_number.png', '18260_True-no_batch_number.png', '18553_False-batch_number_False.png', '18553_False-batch_number_False.png', '18553_False-batch_number_False.png', '18553_False-batch_number_False.png', '18577_False-batch_number_False.png', '18577_False-batch_number_False.png', '18577_False-batch_number_False.png', '18577_False-batch_number_False.png', '19058_True-no_batch_number.png', '192_False-bad_quality_digit.png', '19324_True-no_batch_number.png', '19683_False-batch_number_False.png', '19984_True-no_batch_number.png', '20080_True-no_batch_number.png', '20090_True-no_batch_number.png', '20558_True-no_batch_number.png', '20794_True-no_batch_number.png', '21136_True-no_batch_number.png', '21137_False-no_batch_number.png', '2124_False-no_batch_number.png', '21520_True-no_batch_number.png', '21521_False-no_batch_number.png', '22962_True-no_batch_number.png', '2326_True-bad_quality.png', '23488_True-no_batch_number.png', '23580_True-no_batch_number.png', '24202_True-no_batch_number.png', '24301_True-no_batch_number.png', '24304_False-no_batch_number.png', '24400_False-batch_number_False.png', '24535_True-no_batch_number.png', '24679_True-no_batch_number.png', '24739_True-no_batch_number.png', '25259_True-no_batch_number.png', '25351_True-no_batch_number.png', '26653_True-no_batch_number.png', '26887_True-no_batch_number.png', '26888_False-no_batch_number.png', '26929_True-no_batch_number.png', '26979_True-no_batch_number.png', '28083_True-no_batch_number.png', '28379_True-no_batch_number.png', '28556_False-bad_quality_digit.png', '28601_True-no_batch_number.png', '28602_False-batch_number_False.png', '30302_False-bad_quality_digit.png', '30489_True-no_batch_number.png', '30502_False-batch_number_False.png', '30699_True-no_batch_number.png', '30771_True-no_batch_number.png', '31158_False-bad_quality_digit.png', '31346_False-bad_quality_digit.png', '31866_False-bad_quality_digit.png', '31975_True-no_batch_number.png', '32365_True-no_batch_number.png', '32596_False-batch_number_False.png', '32596_False-batch_number_False.png', '32596_False-batch_number_False.png', '32596_False-batch_number_False.png', '32596_False-batch_number_False.png', '32598_False-batch_number_False.png', '32598_False-batch_number_False.png', '32598_False-batch_number_False.png', '32598_False-batch_number_False.png', '32598_True-batch_number_False.png', '32598_True-batch_number_False.png', '32598_True-batch_number_False.png', '32598_True-batch_number_False.png', '3753_True-no_batch_number.png', '5717_True-no_batch_number.png', '5872_False-batch_number_False.png', '6088_True-batch_number_False.png', '6088_True-batch_number_False.png', '6088_True-batch_number_False.png', '6091_True-batch_number_False.png', '6091_True-batch_number_False.png', '6091_True-batch_number_False.png', '6102_True-batch_number_False.png', '6102_True-batch_number_False.png', '6102_True-batch_number_False.png', '6104_True-batch_number_False.png', '6104_True-batch_number_False.png', '6104_True-batch_number_False.png', '6108_True-batch_number_False.png', '6108_True-batch_number_False.png', '6108_True-batch_number_False.png', '6110_True-batch_number_False.png', '6110_True-batch_number_False.png', '6110_True-batch_number_False.png', '6116_True-batch_number_False.png', '6116_True-batch_number_False.png', '6116_True-batch_number_False.png', '6124_True-batch_number_False.png', '6124_True-batch_number_False.png', '6124_True-batch_number_False.png', '6126_False-batch_number_False.png', '6126_True-batch_number_False.png', '6126_True-batch_number_False.png', '6126_True-batch_number_False.png', '6126_True-batch_number_False.png', '7540_True-no_batch_number.png', '8374_True-no_batch_number.png', '8770_True-no_batch_number.png', '8770_True-no_batch_number.png', '8912_True-no_batch_number.png']
 
-for filename in f:
+
+not_passed = []
+
+for filename in problem_file:
     print(filename)
     start = time.time()
     
     first = True if filename.split("_")[1].split(".")[0] == "True" else False
+    first = True if filename.split("_")[1].split("-")[0] == "True" else False
     
     #GET ALL RELEVANT INFORMATION FROM IMAGE
     img = cv.rotate(cv.imread(folder + filename), cv.ROTATE_180)
@@ -170,35 +174,32 @@ for filename in f:
                 axs[1].text(0,0, filename +"\n"+ str(classes))
         
                 plt.show()
-            
-            
-            
-            
-            
-            
+                
+                not_passed.append(filename)
+
             for i,key in enumerate(iter_dict):
                 
                 poi = POIs_total_img_resized[key]
                 if first:
-                    shape_mean_th_not = cv.imread("number_ref/ref_" + str(classes[:3][i]) + ".png",0)
+                    shape_mean_th_not = cv.imread("number_ref/ref_" + str(batch_number[:3][i]) + ".png",0)
                 else:
-                    shape_mean_th_not = cv.imread("number_ref/ref_" + str(classes[-5:][i]) + ".png",0)   
+                    shape_mean_th_not = cv.imread("number_ref/ref_" + str(batch_number[-5:][i]) + ".png",0)   
                 
                 prob = cv.resize(poi, (40,70), interpolation = cv.INTER_AREA)
-                d1,d2,equ_masked_th = ocr.get_impression_score(prob,shape_mean_th_not, True)    
+                d1,d2,equ_masked_th = ocr.get_impression_score(prob,shape_mean_th_not, False)    
                 
-                if d1 < 70:
+                quality_ok = True
+                if d1 < 79:
                     fig, axs = plt.subplots(3)
                     axs[0].imshow(poi,'gray')
                     axs[1].text(0,0, str(d1) + "\n" + str(d2) + "\n" + filename)
                     axs[2].imshow(equ_masked_th,'gray')
             
                     plt.show()
-               
-                
-            
- 
-
+                    quality_ok = False
+                    
+                if not quality_ok:
+                    not_passed.append(filename)
             
         else:
             
@@ -209,14 +210,20 @@ for filename in f:
     
             plt.show()   
             
+            not_passed.append(filename)
+            
     else:
         fig, axs = plt.subplots(2)
             
         axs[0].imshow(img_gray,'gray')
         axs[1].text(0,0, filename + "no batch number")
 
-        plt.show()   
+        plt.show() 
         
+        not_passed.append(filename)
+        
+        
+print(not_passed)
 
     
     

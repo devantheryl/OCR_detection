@@ -99,7 +99,7 @@ def find_numbers_positions(img):
                 rectangles.append(cv.boundingRect(c))
                 th_plot = cv.rectangle(th_plot, (x,y), (x+w, y+h),(0,0,0),2)
 
-    """
+    
     plt.imshow(th,'gray')
     plt.show() 
     
@@ -119,7 +119,7 @@ def find_numbers_positions(img):
     plt.imshow(th_plot,'gray')
     plt.show()  
     
-    """
+    
     """
     CODE TO DETECT THE OVERLAPPING RECTANGLE
     """
@@ -204,7 +204,7 @@ def get_impression_score(prob,ref, plot = False):
     
     equ = cv.equalizeHist(prob)
     
-    equ_th = cv.adaptiveThreshold(equ,255,cv.ADAPTIVE_THRESH_MEAN_C,cv.THRESH_BINARY,11,0)
+    equ_th = cv.adaptiveThreshold(equ,255,cv.ADAPTIVE_THRESH_MEAN_C,cv.THRESH_BINARY,19,0)
     equ_masked_th = cv.bitwise_and(equ_th,equ_th,mask = ref)
     
     
