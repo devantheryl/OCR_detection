@@ -16,6 +16,8 @@ import imutils
 import collections
 import numpy as np
 import graph_utils as Graph
+import segment_vials as sv
+import get_number
 
 os.chdir("C:/Users/LDE/Prog/OCR_detection")
 
@@ -198,7 +200,183 @@ def find_numbers_positions(img):
     return merged_rectangles,img_cropped, img_resized, th, POIs_th, POIs_img_resized, POIs_img
 
 
-  
+def analyse_img(img_gray, first, model, batch_number, plot):
+    
+    POIs_total_img_resized,POIs_total_th  = sv.get_POI_intensity(img_gray, True)
+    
+    if POIs_total_img_resized:
+        
+        #predict the classes
+        classes, probas = get_number.get_number_from_image_POI(model,POIs_total_th)
+        proba_score = [probas[i,classe] for i, classe in enumerate(classes)]
+        
+        if plot:
+            print(classes)
+            print(proba_score)
+        
+        
+        
+        if len(classes) >=3:
+            
+            if first:
+                classes_prob = str(classes[:3]).strip("[]")
+                batch_number_ref = str(batch_number[:3]).strip("[]")
+                iter_dict = list(POIs_total_img_resized)[0:3]
+            else:
+                classes_prob = str(classes[-5:]).strip("[]")
+                batch_number_ref = str(batch_number[-5:]).strip("[]")
+                iter_dict = list(POIs_total_img_resized)[-5:]
+                
+            
+            if classes_prob not in batch_number_ref:
+                return "batch_number False"
+            
+            
+                
+            quality_ok = True
+            for i,key in enumerate(iter_dict):
+                
+                poi = POIs_total_img_resized[key]
+                if first:
+                    shape_mean_th_not = cv.imread("number_ref/ref_" + str(batch_number[:3][i]) + ".png",0)
+                else:
+                    shape_mean_th_not = cv.imread("number_ref/ref_" + str(batch_number[-5:][i]) + ".png",0)   
+                
+                prob = cv.resize(poi, (40,70), interpolation = cv.INTER_AREA)
+                d1,d2,equ_masked_th = get_impression_score(prob,shape_mean_th_not, False)    
+                
+                
+                if d1 < 81:
+                    
+                    if plot:
+                        fig, axs = plt.subplots(3)
+                        axs[0].imshow(poi,'gray')
+                        axs[2].imshow(equ_masked_th,'gray')
+                
+                        plt.show()
+                    
+                    quality_ok = False
+                    
+                    
+            if quality_ok:
+                return "ok"
+            else:
+                return "quality_problem"
+            
+        else:
+            
+            return "not enough POI"
+            
+    else:
+        return "no batch number"
+    
+def analyse_write_img(img_gray, first, model, batch_number, plot,write_out = False, img_number = 0, output_dir = "" ):
+    
+    POIs_total_img_resized,POIs_total_th  = sv.get_POI_intensity(img_gray, True)
+    
+    if POIs_total_img_resized:
+        if write_out:
+            poi_to_save = []
+            for i,(key,poi) in enumerate(POIs_total_th.items()):
+                
+                poi_to_save.append(poi)
+                
+            if first:
+                poi_to_save = poi_to_save[:3]
+                for number,p in enumerate(poi_to_save):
+                    filename = str(batch_number[number]) + "/"  + str(img_number) + ".png"
+                        
+                    rand = np.random.uniform(0, 1)
+                    if rand < 0.8:
+                        directory = output_dir + "train/" 
+                        img_number +=1
+                    else:
+                        directory = output_dir + "val/"
+                        img_number += 1
+                            
+                        
+                    cv.imwrite(directory  + filename, p)
+            else:
+                poi_to_save = poi_to_save[-5:]
+                for number,p in enumerate(poi_to_save):
+        
+                    filename = str(batch_number[3+number]) + "/"  + str(img_number) + ".png"
+                        
+                    rand = np.random.uniform(0, 1)
+                    if rand < 0.8:
+                        directory = output_dir + "train/" 
+                        img_number +=1
+                    else:
+                        directory = output_dir + "val/"
+                        img_number += 1 
+                    cv.imwrite(directory  + filename, p)
+        
+        #predict the classes
+        classes, probas = get_number.get_number_from_image_POI(model,POIs_total_th)
+        proba_score = [probas[i,classe] for i, classe in enumerate(classes)]
+        
+        if plot:
+            print(classes)
+            print(proba_score)
+        
+        
+        
+        if len(classes) >=3:
+            
+            if first:
+                classes_prob = str(classes[:3]).strip("[]")
+                batch_number_ref = str(batch_number[:3]).strip("[]")
+                iter_dict = list(POIs_total_img_resized)[0:3]
+            else:
+                classes_prob = str(classes[-5:]).strip("[]")
+                batch_number_ref = str(batch_number[-5:]).strip("[]")
+                iter_dict = list(POIs_total_img_resized)[-5:]
+                
+            
+            if classes_prob not in batch_number_ref:
+                return "batch_number False"
+            
+            
+                
+            quality_ok = True
+            for i,key in enumerate(iter_dict):
+                
+                poi = POIs_total_img_resized[key]
+                if first:
+                    shape_mean_th_not = cv.imread("number_ref/ref_" + str(batch_number[:3][i]) + ".png",0)
+                else:
+                    shape_mean_th_not = cv.imread("number_ref/ref_" + str(batch_number[-5:][i]) + ".png",0)   
+                
+                prob = cv.resize(poi, (40,70), interpolation = cv.INTER_AREA)
+                d1,d2,equ_masked_th = get_impression_score(prob,shape_mean_th_not, False)    
+                
+                
+                if d1 < 81:
+                    
+                    if plot:
+                        fig, axs = plt.subplots(3)
+                        axs[0].imshow(poi,'gray')
+                        axs[1].text(0,0, str(d1) + "\n" + str(d2) + "\n" + filename)
+                        axs[2].imshow(equ_masked_th,'gray')
+                
+                        plt.show()
+                    
+                    quality_ok = False
+                    
+                    
+            if quality_ok:
+                return "ok"
+            else:
+                return "quality_problem"
+            
+        else:
+            
+            return "not enough POI"
+            
+    else:
+        return "no batch number"
+
+
 
 def get_impression_score(prob,ref, plot = False):
     

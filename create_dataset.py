@@ -56,8 +56,7 @@ model = keras.models.load_model(checkpoint_path)
 """
 GET ALL THE FILE IN A FOLDER
 """
-
-folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/production_06.10.22_22-015556/"
+folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/production_27.09.22_22-015676/"
 
 f = []
 for (dirpath, dirnames, filenames) in walk(folder):
@@ -73,157 +72,47 @@ img_number = 10000
 out_directory = "dataset/production_22.09.22/"
 output_dir = "dataset/"
 
-batch_number = np.array([2,2,0,1,5,5,5,6])
+batch_number = np.array([2,2,0,1,5,6,7,6])
 
 
-problem_file = ['18577_False-batch_number_False.png', '24400_False-batch_number_False.png', '32598_False-batch_number_False.png', '5872_False-batch_number_False.png']
-
+problem_file = ['11573_False-batch_number_False.png', '11575_False-batch_number_False.png', '11595_False-batch_number_False.png', '11597_False-batch_number_False.png', '11603_False-batch_number_False.png', '11605_False-batch_number_False.png', '11607_False-batch_number_False.png', '11609_False-batch_number_False.png', '11612_True-no_batch_number.png', '16106_True-batch_number_False.png', '16110_False-batch_number_False.png', '16112_True-batch_number_False.png', '28518_True-batch_number_False.png', '28520_False-batch_number_False.png', '28520_True-batch_number_False.png', '28521_True-batch_number_False.png', '28524_False-batch_number_False.png', '28524_True-batch_number_False.png', '28528_False-batch_number_False.png', '28528_True-batch_number_False.png', '28529_True-batch_number_False.png', '28530_False-batch_number_False.png', '28532_False-batch_number_False.png', '28534_False-batch_number_False.png', '28540_False-batch_number_False.png', '28542_False-batch_number_False.png', '28546_False-batch_number_False.png', '2878_False-batch_number_False.png', '32595_True-no_batch_number.png', '4513_True-batch_number_False.png', '4514_False-no_batch_number.png', '4515_True-no_batch_number.png', '4516_False-no_batch_number.png', '4518_True-batch_number_False.png', '5854_False-no_batch_number.png', '5855_True-no_batch_number.png', '5856_False-no_batch_number.png', '5861_True-no_batch_number.png', '5862_False-batch_number_False.png', '5863_True-no_batch_number.png', '5865_True-no_batch_number.png', '5868_True-batch_number_False.png', '6077_True-no_batch_number.png', '6100_True-batch_number_False.png']
 
 not_passed = []
+passed = []
+plot = True
 
-for filename in problem_file:
+for filename in f:
     print(filename)
     start = time.time()
     
     first = True if filename.split("_")[1].split(".")[0] == "True" else False
-    first = True if filename.split("_")[1].split("-")[0] == "True" else False
+    #first = True if filename.split("_")[1].split("-")[0] == "True" else False
     
     #GET ALL RELEVANT INFORMATION FROM IMAGE
     img = cv.rotate(cv.imread(folder + filename), cv.ROTATE_180)
     img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     
+    status = ocr.analyse_img(img_gray, first, model, batch_number, plot)
     
-    #rectangles,imgs_cropped, img_resized, imgs_th, POIs_total_th, POIs_total_img_resized, POIs_total_img = ocr.find_numbers_positions(img)
-    
-    POIs_total_img_resized,POIs_total_th  = sv.get_POI_intensity(img_gray, True)
-    
-    
-    
-    if POIs_total_img_resized:
-        if write_out:
-            poi_to_save = []
-            for i,(key,poi) in enumerate(POIs_total_th.items()):
-                
-                poi_to_save.append(poi)
-                
-            if first:
-                poi_to_save = poi_to_save[:3]
-                for number,p in enumerate(poi_to_save):
-                    filename = str(batch_number[number]) + "/"  + str(img_number) + ".png"
-                        
-                    rand = np.random.uniform(0, 1)
-                    if rand < 0.8:
-                        directory = output_dir + "train/" 
-                        img_number +=1
-                    else:
-                        directory = output_dir + "val/"
-                        img_number += 1
-                            
-                        
-                    cv.imwrite(directory  + filename, p)
-            else:
-                poi_to_save = poi_to_save[-5:]
-                for number,p in enumerate(poi_to_save):
-        
-                    filename = str(batch_number[3+number]) + "/"  + str(img_number) + ".png"
-                        
-                    rand = np.random.uniform(0, 1)
-                    if rand < 0.8:
-                        directory = output_dir + "train/" 
-                        img_number +=1
-                    else:
-                        directory = output_dir + "val/"
-                        img_number += 1 
-                    cv.imwrite(directory  + filename, p)
-        
-        #predict the classes
-        classes, probas = get_number.get_number_from_image_POI(model,POIs_total_th)
-        proba_score = [probas[i,classe] for i, classe in enumerate(classes)]
-        print(classes)
-        
-        
-        """
-        for _,r in rectangles.items():
-            img_resized = cv.rectangle(img_resized, (r[0],r[1]), (r[0]+r[2],r[1]+r[3]),(255,0,0),2)
-        """
-        
-        
-        if len(classes) >=3:
-            
-            if first:
-                classes_prob = str(classes[:3]).strip("[]")
-                batch_number_ref = str(batch_number[:3]).strip("[]")
-                iter_dict = list(POIs_total_img_resized)[0:3]
-            else:
-                classes_prob = str(classes[-5:]).strip("[]")
-                batch_number_ref = str(batch_number[-5:]).strip("[]")
-                iter_dict = list(POIs_total_img_resized)[-5:]
-                
-            
-            if classes_prob in batch_number_ref:
-                batch_number_ok = True
-            else:
-                batch_number_ok = False
-            
-                    
-            if batch_number_ok == False:
-                
-                fig, axs = plt.subplots(2)
-                
-                axs[0].imshow(img_gray,'gray')
-                axs[1].text(0,0, filename +"\n"+ str(classes))
-        
-                plt.show()
-                
-                not_passed.append(filename)
-
-            for i,key in enumerate(iter_dict):
-                
-                poi = POIs_total_img_resized[key]
-                if first:
-                    shape_mean_th_not = cv.imread("number_ref/ref_" + str(batch_number[:3][i]) + ".png",0)
-                else:
-                    shape_mean_th_not = cv.imread("number_ref/ref_" + str(batch_number[-5:][i]) + ".png",0)   
-                
-                prob = cv.resize(poi, (40,70), interpolation = cv.INTER_AREA)
-                d1,d2,equ_masked_th = ocr.get_impression_score(prob,shape_mean_th_not, False)    
-                
-                quality_ok = True
-                if d1 < 10:
-                    fig, axs = plt.subplots(3)
-                    axs[0].imshow(poi,'gray')
-                    axs[1].text(0,0, str(d1) + "\n" + str(d2) + "\n" + filename)
-                    axs[2].imshow(equ_masked_th,'gray')
-            
-                    plt.show()
-                    quality_ok = False
-                    
-                if not quality_ok:
-                    not_passed.append(filename)
-            
-        else:
-            
-            fig, axs = plt.subplots(2)
-            
-            axs[0].imshow(img_gray,'gray')
-            axs[1].text(0,0, filename+ "  quality sucks")
-    
-            plt.show()   
-            
-            not_passed.append(filename)
-            
+    if status == "ok":
+        passed.append(filename)
     else:
-        fig, axs = plt.subplots(2)
-            
-        axs[0].imshow(img_gray,'gray')
-        axs[1].text(0,0, filename + "no batch number")
-
-        plt.show() 
-        
         not_passed.append(filename)
         
-        
+        if plot:
+            fig, axs = plt.subplots(2)
+                
+            axs[0].imshow(img_gray,'gray')
+            axs[1].text(0,0, filename +"\n" + status)
+    
+            plt.show()
+
+
 print(not_passed)
+print(passed)
+
+print("ok : ", len(passed)/len(f)*100)
+print("rejet : ",len(not_passed)/len(f)*100)
 
     
     

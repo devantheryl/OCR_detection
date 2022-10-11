@@ -51,7 +51,7 @@ def remove_light_part(img, plot = False):
     
     #NINARY THRESHOLD TO GET THE WHITE PART
     _, img_th = cv.threshold(img,254,255,cv.THRESH_BINARY)
-    img_th_summed = np.sum(img_th,axis = 1)/max(np.sum(img_th,axis = 1)) * np.shape(img_th)[0]
+    img_th_summed = np.sum(img_th,axis = 1)/max(np.sum(img_th,axis = 1) +1) * np.shape(img_th)[0]
     
     
     """
@@ -130,7 +130,7 @@ def get_ZOI_X(img, plot = False):
     th_not = np.concatenate((row_of_zero,th_not,row_of_zero), axis = 0)
     
     #compute the insensity
-    th_not_summed = np.sum(th_not,axis = 1)/max(np.sum(th_not,axis = 1)) * np.shape(th_not)[1]
+    th_not_summed = np.sum(th_not,axis = 1)/max(np.sum(th_not,axis = 1)+1) * np.shape(th_not)[1]
     th_not_summed[0] = 0
     
     
@@ -200,7 +200,7 @@ def get_POI_y(ZOI, plot = False):
     #inverse the image
     ZOI_th_not = np.abs(ZOI_th - 255)
     
-    ZOI_th_summed = np.sum(ZOI_th_not,axis = 0)/max(np.sum(ZOI_th_not,axis = 0)) * np.shape(ZOI_th_not)[0]
+    ZOI_th_summed = np.sum(ZOI_th_not,axis = 0)/max(np.sum(ZOI_th_not,axis = 0)+1) * np.shape(ZOI_th_not)[0]
     
     #place a controle line and get the intersection
     controle_line = np.full(np.shape(ZOI_th)[1], 1)
@@ -267,7 +267,7 @@ def get_POI_y(ZOI, plot = False):
                 POI = cv.resize(POI_reshaped,dim, interpolation = cv.INTER_AREA)
                 
                 #make the POI exploitable by the deep learning algo
-                POI_th = cv.adaptiveThreshold(POI,255,cv.ADAPTIVE_THRESH_MEAN_C,cv.THRESH_BINARY,61,18)
+                POI_th = cv.adaptiveThreshold(POI,255,cv.ADAPTIVE_THRESH_MEAN_C,cv.THRESH_BINARY,61,10)
                 POI_th_blurred = cv.GaussianBlur(POI_th,(3,7),0)
                 _,POI_th_blurred_th = cv.threshold(POI_th_blurred,240,255,cv.THRESH_BINARY)
                 
@@ -294,21 +294,25 @@ def get_POI_intensity(img_gray, crop_entry = True):
     CROP ENTRY
     """
     if crop_entry:
-        img_cropped = img_gray[300:1000,340:1300]
+        img_cropped = img_gray[300:1000,320:1300]
     else:
         img_cropped = img_gray
     
     
-    img_whithout_light = remove_light_part(img_cropped, True)
-    ZOI, ZOI_th = get_ZOI_X(img_whithout_light, plot = True)
-    if np.shape(ZOI)[0]:
-        POIs, POIs_th = get_POI_y(ZOI, plot = True)
+    img_whithout_light = remove_light_part(img_cropped, False)
+    if np.shape(img_whithout_light)[0]:
+        ZOI, ZOI_th = get_ZOI_X(img_whithout_light, plot = False)
     else:
-        return None,None
+        return None, None
+    if np.shape(ZOI)[0]:
+        POIs, POIs_th = get_POI_y(ZOI, plot = False)
+    else:
+        return None, None
     
     return POIs,POIs_th
     
     
+
 def get_caps_color(img):
     pass
     
