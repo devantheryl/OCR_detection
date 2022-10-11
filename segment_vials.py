@@ -120,7 +120,7 @@ def get_ZOI_X(img, plot = False):
     
     #Blurres and adaptif threshold
     blurred = cv.GaussianBlur(img,(9,21),0)
-    th = cv.adaptiveThreshold(blurred,255,cv.ADAPTIVE_THRESH_MEAN_C,cv.THRESH_BINARY,151,18)
+    th = cv.adaptiveThreshold(blurred,255,cv.ADAPTIVE_THRESH_MEAN_C,cv.THRESH_BINARY,331,32)
 
     #inverse the image
     th_not = np.abs(th - 255)
@@ -138,6 +138,7 @@ def get_ZOI_X(img, plot = False):
     merge certain part, usefull to capture the trucated number
     """
     counter = 0
+    counter_max = 40
     maybe_merge = False
     first_point = 0
 
@@ -149,7 +150,7 @@ def get_ZOI_X(img, plot = False):
             counter = 0
         if maybe_merge:
             counter += 1
-        if counter > 10:
+        if counter > counter_max:
             counter = 0
             maybe_merge = False
         if (diff > 0 and abs(diff) > 20) and maybe_merge:
@@ -185,6 +186,9 @@ def get_ZOI_X(img, plot = False):
         plt.plot(th_not_summed,x)
         plt.plot(controle_line, x, 'r-')
         plt.plot(controle_line[idx],x[idx], 'ro')
+        plt.show()
+        
+        plt.imshow(ZOI, 'gray')
         plt.show()
         
     
@@ -291,9 +295,9 @@ def get_POI_intensity(img_gray, crop_entry = True):
         img_cropped = img_gray
     
     
-    img_whithout_light = remove_light_part(img_cropped, True)
-    ZOI, ZOI_th = get_ZOI_X(img_whithout_light, plot = False)
-    POIs, POIs_th = get_POI_y(ZOI, ZOI_th, plot = False)
+    img_whithout_light = remove_light_part(img_cropped, False)
+    ZOI, ZOI_th = get_ZOI_X(img_whithout_light, plot = True)
+    POIs, POIs_th = get_POI_y(ZOI, ZOI_th, plot = True)
     
 
     

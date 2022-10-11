@@ -57,7 +57,7 @@ model = keras.models.load_model(checkpoint_path)
 GET ALL THE FILE IN A FOLDER
 """
 
-folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/bad_imgs_06.10.22_22-015556/"
+folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/production_29.09.22_22-015715/"
 
 f = []
 for (dirpath, dirnames, filenames) in walk(folder):
@@ -73,19 +73,20 @@ img_number = 10000
 out_directory = "dataset/production_22.09.22/"
 output_dir = "dataset/"
 
-batch_number = np.array([2,2,0,1,5,5,5,5,6])
+batch_number = np.array([2,2,0,1,5,7,1,5])
 
 
-problem_file = ['10136_False-batch_number_False.png', '11010_False-bad_quality_digit.png', '11059_False-batch_number_False.png', '11201_False-bad_quality_digit.png', '12131_False-bad_quality_digit.png', '12311_False-no_batch_number.png', '12313_False-no_batch_number.png', '12455_False-no_batch_number.png', '12535_False-bad_quality_digit.png', '12599_False-no_batch_number.png', '12935_False-no_batch_number.png', '13151_False-bad_quality_digit.png', '13745_False-no_batch_number.png', '13900_False-batch_number_False.png', '14580_False-bad_quality_digit.png', '14831_False-batch_number_False.png', '16258_False-batch_number_False.png', '16751_False-batch_number_False.png', '18261_False-no_batch_number.png', '18553_False-batch_number_False.png', '18577_False-batch_number_False.png', '19019_False-no_batch_number.png', '19109_False-no_batch_number.png', '19169_False-no_batch_number.png', '192_False-bad_quality_digit.png', '19361_False-no_batch_number.png', '19505_False-no_batch_number.png', '19573_False-batch_number_False.png', '19683_False-batch_number_False.png', '19745_False-no_batch_number.png', '19971_False-no_batch_number.png', '20081_False-no_batch_number.png', '20129_False-no_batch_number.png', '20211_False-bad_quality_digit.png', '20301_False-no_batch_number.png', '20469_False-no_batch_number.png', '20559_False-no_batch_number.png', '20705_False-no_batch_number.png', '20741_False-no_batch_number.png', '21137_False-no_batch_number.png', '2124_False-no_batch_number.png', '21521_False-no_batch_number.png', '21665_False-no_batch_number.png', '21905_False-no_batch_number.png', '22097_False-no_batch_number.png', '22961_False-no_batch_number.png', '23297_False-no_batch_number.png', '23571_False-bad_quality_digit.png', '23967_False-no_batch_number.png', '24021_False-no_batch_number.png', '24143_False-no_batch_number.png', '24203_False-no_batch_number.png', '24278_False-batch_number_False.png', '24280_False-batch_number_False.png', '24304_False-no_batch_number.png', '24400_False-batch_number_False.png', '2442_False-no_batch_number.png', '24544_False-no_batch_number.png', '24740_False-no_batch_number.png', '24824_False-no_batch_number.png', '24976_False-no_batch_number.png', '25024_False-no_batch_number.png', '25231_False-batch_number_False.png', '25456_False-no_batch_number.png', '25536_False-bad_quality_digit.png', '25598_False-no_batch_number.png', '25674_False-bad_quality_digit.png', '25888_False-no_batch_number.png', '25970_False-bad_quality_digit.png', '26566_False-no_batch_number.png', '26888_False-no_batch_number.png', '2689_False-batch_number_False.png', '27048_False-no_batch_number.png', '27468_False-no_batch_number.png', '28556_False-bad_quality_digit.png', '28602_False-batch_number_False.png', '28768_False-bad_quality_digit.png', '29438_False-bad_quality_digit.png', '29674_False-bad_quality_digit.png', '30402_False-bad_quality_digit.png', '30496_False-bad_quality_digit.png', '30502_False-batch_number_False.png', '30544_False-bad_quality_digit.png', '31068_False-no_batch_number.png', '31252_False-bad_quality_digit.png', '31782_False-batch_number_False.png', '31832_False-bad_quality_digit.png', '31882_False-no_batch_number.png', '31966_False-bad_quality_digit.png', '32032_False-bad_quality_digit.png', '32054_False-bad_quality_digit.png', '32060_False-bad_quality_digit.png', '32154_False-bad_quality_digit.png', '32160_False-bad_quality_digit.png', '32198_False-bad_quality_digit.png', '32204_False-bad_quality_digit.png', '32210_False-bad_quality_digit.png', '32216_False-bad_quality_digit.png', '32218_False-no_batch_number.png', '32232_False-bad_quality_digit.png', '32254_False-bad_quality_digit.png', '32282_False-bad_quality_digit.png', '32484_False-bad_quality_digit.png', '32596_False-batch_number_False.png', '32598_False-batch_number_False.png', '366_False-no_batch_number.png', '5396_False-no_batch_number.png', '5872_False-batch_number_False.png', '5912_False-bad_quality_digit.png', '6126_False-batch_number_False.png', '6431_False-batch_number_False.png', '6979_False-no_batch_number.png', '7359_False-batch_number_False.png', '828_False-batch_number_False.png', '9059_False-no_batch_number.png', '9216_False-batch_number_False.png', '9346_False-no_batch_number.png', '9666_False-bad_quality_digit.png']
+problem_file = ['1040_False.png', '1120_False.png', '1462_False.png', '1608_False.png', '282_False.png', '336_False.png', '34_False.png', '358_False.png', '400_False.png', '422_False.png', '432_False.png', '474_False.png', '506_False.png', '564_False.png', '566_False.png', '608_False.png', '624_False.png', '634_False.png', '682_False.png', '928_False.png', '98_False.png']
+
 
 not_passed = []
 
-for filename in f:
+for filename in problem_file:
     print(filename)
     start = time.time()
     
     first = True if filename.split("_")[1].split(".")[0] == "True" else False
-    first = True if filename.split("_")[1].split("-")[0] == "True" else False
+    #first = True if filename.split("_")[1].split("-")[0] == "True" else False
     
     #GET ALL RELEVANT INFORMATION FROM IMAGE
     img = cv.rotate(cv.imread(folder + filename), cv.ROTATE_180)
