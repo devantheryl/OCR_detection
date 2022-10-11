@@ -141,7 +141,6 @@ def get_ZOI_X(img, plot = False):
     counter_max = 40
     maybe_merge = False
     first_point = 0
-
     for i in range(1,len(th_not_summed)):
         diff = th_not_summed[i] - th_not_summed[i-1]
         if diff < 0 and abs(diff) > 20:
@@ -194,10 +193,14 @@ def get_ZOI_X(img, plot = False):
     
     return ZOI, ZOI_th
 
-def get_POI_y(ZOI, ZOI_th, plot = False):
+def get_POI_y(ZOI, plot = False):
     
     #get the intensity in y
-    ZOI_th_summed = np.sum(ZOI_th,axis = 0)/max(np.sum(ZOI_th,axis = 0)) * np.shape(ZOI_th)[0]
+    ZOI_th = cv.adaptiveThreshold(ZOI,255,cv.ADAPTIVE_THRESH_MEAN_C,cv.THRESH_BINARY,151,14)
+    #inverse the image
+    ZOI_th_not = np.abs(ZOI_th - 255)
+    
+    ZOI_th_summed = np.sum(ZOI_th_not,axis = 0)/max(np.sum(ZOI_th_not,axis = 0)) * np.shape(ZOI_th_not)[0]
     
     #place a controle line and get the intersection
     controle_line = np.full(np.shape(ZOI_th)[1], 1)
@@ -211,74 +214,75 @@ def get_POI_y(ZOI, ZOI_th, plot = False):
        if abs(idy[i] - idy[i-1])> 70:
            
            if np.sum(ZOI_th_summed[idy[i-1]:idy[i]]) > 3000:
-               POI_y1 = idy[i-1]
-               POI_y2 = idy[i]
-               POI_base = ZOI[:,POI_y1:POI_y2+1]
+                POI_y1 = idy[i-1]
+                POI_y2 = idy[i]
+                POI_base = ZOI[:,POI_y1:POI_y2+1]
+                
+                
+                """
+                REHSAPE THE POI
+                """
+                #we take the POI Thresholed and want to find a new POI
+                POI_prob = ZOI_th_not[:, POI_y1:POI_y2+1]
+                
+                #add a row of 0 at the top and bottom
+                row_of_zero = np.zeros((1,np.shape(POI_prob)[1]))
+                POI_prob = np.concatenate((row_of_zero,POI_prob,row_of_zero), axis = 0)
+                
+                #get the intensity in x of the POI
+                POI_prob_summed = np.sum(POI_prob,axis = 1)/max(np.sum(POI_prob,axis = 1)) * np.shape(POI_prob)[1]
+                
+                #get the intersection with the controle line
+                POI_controle_line = np.full(np.shape(POI_prob)[0], 1)
+                POI_idx  = np.argwhere(np.diff(np.sign(POI_controle_line - POI_prob_summed))).flatten()
+                
+                #get the best POI
+                """
+                max_prob_x1 = 0
+                max_prob_x2 = 0
+                for j in range(1,len(POI_idx)):
+                    if abs(POI_idx[j]-POI_idx[j-1]) > abs(max_prob_x2-max_prob_x1):
+                        max_prob_x1 = POI_idx[j-1]  
+                        max_prob_x2 = POI_idx[j]
+                """
+                max_prob_x1 = POI_idx[0]
+                max_prob_x2 = POI_idx[-1]
+                
+                POI_reshaped = POI_base[max_prob_x1:max_prob_x2-1,:] #again -1 because we add a row of 0
+                
+                if plot:
+                    POI_x_ = np.array(range(np.shape(POI_prob)[0]))
+                    plt.imshow(POI_prob,'gray')
+                    plt.plot(POI_prob_summed,POI_x_)
+                    plt.plot(POI_controle_line, POI_x_, 'r-')
+                    plt.plot(POI_controle_line[POI_idx],POI_x_[POI_idx], 'ro')
+                    plt.show()
+
                
-               #check if the POI has a good size, if not :
-               if POI_base.shape[0] > 180:
-                   
-                   #we take the POI Thresholed and want to find a new POI
-                   POI_prob = ZOI_th[:, POI_y1:POI_y2+1]
-                   
-                   #add a row of 0 at the top and bottom
-                   row_of_zero = np.zeros((1,np.shape(POI_prob)[1]))
-                   POI_prob = np.concatenate((row_of_zero,POI_prob,row_of_zero), axis = 0)
-                   
-                   #get the intensity in x of the POI
-                   POI_prob_summed = np.sum(POI_prob,axis = 1)/max(np.sum(POI_prob,axis = 1)) * np.shape(POI_prob)[1]
-                   
-                   #get the intersection with the controle line
-                   POI_controle_line = np.full(np.shape(POI_prob)[0], 1)
-                   POI_idx  = np.argwhere(np.diff(np.sign(POI_controle_line - POI_prob_summed))).flatten()
-                   
-                   #get the best POI
-                   max_prob_x1 = 0
-                   max_prob_x2 = 0
-                   for j in range(1,len(POI_idx)):
-                       if abs(POI_idx[j]-POI_idx[j-1]) > abs(max_prob_x2-max_prob_x1):
-                           max_prob_x1 = POI_idx[j-1]
-                           max_prob_x2 = POI_idx[j]
-                   
-                   POI = POI_base[max_prob_x1-1:max_prob_x2,:] #again -1 because we add a row of 0
-                   
-                   if plot:
-                       POI_x_ = np.array(range(np.shape(POI_prob)[0]))
-                       plt.imshow(POI_prob,'gray')
-                       plt.plot(POI_prob_summed,POI_x_)
-                       plt.plot(POI_controle_line, POI_x_, 'r-')
-                       plt.plot(POI_controle_line[POI_idx],POI_x_[POI_idx], 'ro')
-                       plt.show()
-               
-               else:
-                   POI = POI_base
-               
-               
-               #resize the POI
-               scale_percent = 40 # percent of original size
-               width = int(POI.shape[1] * scale_percent / 100)
-               height = int(POI.shape[0] * scale_percent / 100)
-               dim = (width, height)
-               POI = cv.resize(POI,dim, interpolation = cv.INTER_AREA)
-               
-               #make the POI exploitable by the deep learning algo
-               POI_th = cv.adaptiveThreshold(POI,255,cv.ADAPTIVE_THRESH_MEAN_C,cv.THRESH_BINARY,61,18)
-               POI_th_blurred = cv.GaussianBlur(POI_th,(3,7),0)
-               _,POI_th_blurred_th = cv.threshold(POI_th_blurred,240,255,cv.THRESH_BINARY)
-               
-               #store the POI and POI for deep learning
-               POIs[idy[i-1]] = POI
-               POIs_th[idy[i-1]] = POI_th_blurred_th
+                #resize the POI
+                scale_percent = 40 # percent of original size
+                width = int(POI_reshaped.shape[1] * scale_percent / 100)
+                height = int(POI_reshaped.shape[0] * scale_percent / 100)
+                dim = (width, height)
+                POI = cv.resize(POI_reshaped,dim, interpolation = cv.INTER_AREA)
+                
+                #make the POI exploitable by the deep learning algo
+                POI_th = cv.adaptiveThreshold(POI,255,cv.ADAPTIVE_THRESH_MEAN_C,cv.THRESH_BINARY,61,18)
+                POI_th_blurred = cv.GaussianBlur(POI_th,(3,7),0)
+                _,POI_th_blurred_th = cv.threshold(POI_th_blurred,240,255,cv.THRESH_BINARY)
+                
+                #store the POI and POI for deep learning
+                POIs[idy[i-1]] = POI
+                POIs_th[idy[i-1]] = POI_th_blurred_th
                
     if plot:
-        plt.imshow(ZOI_th,'gray')
+        plt.imshow(ZOI_th_not,'gray')
         plt.plot(y,ZOI_th_summed)
         plt.plot(y,controle_line, 'r-')
         plt.plot(y[idy],controle_line[idy], 'ro')
         plt.show()
         
-        
-        for key,POI in POIs.items():
+        for key,POI in POIs_th.items():
             plt.imshow(POI,'gray')
             plt.show() 
                
@@ -295,11 +299,12 @@ def get_POI_intensity(img_gray, crop_entry = True):
         img_cropped = img_gray
     
     
-    img_whithout_light = remove_light_part(img_cropped, False)
+    img_whithout_light = remove_light_part(img_cropped, True)
     ZOI, ZOI_th = get_ZOI_X(img_whithout_light, plot = True)
-    POIs, POIs_th = get_POI_y(ZOI, ZOI_th, plot = True)
-    
-
+    if np.shape(ZOI)[0]:
+        POIs, POIs_th = get_POI_y(ZOI, plot = True)
+    else:
+        return None,None
     
     return POIs,POIs_th
     

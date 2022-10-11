@@ -45,7 +45,7 @@ LOAD THE DEEP LEARNING MODEL
 """
 
 
-checkpoint_path = "model/training_real_number_only_4_128_10/cp-0016.ckpt"
+checkpoint_path = "model/training_real_number_only_4_128_10/cp-0095.ckpt"
 
 
 # Load the previously saved weights
@@ -57,7 +57,7 @@ model = keras.models.load_model(checkpoint_path)
 GET ALL THE FILE IN A FOLDER
 """
 
-folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/production_29.09.22_22-015715/"
+folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/production_06.10.22_22-015556/"
 
 f = []
 for (dirpath, dirnames, filenames) in walk(folder):
@@ -73,10 +73,10 @@ img_number = 10000
 out_directory = "dataset/production_22.09.22/"
 output_dir = "dataset/"
 
-batch_number = np.array([2,2,0,1,5,7,1,5])
+batch_number = np.array([2,2,0,1,5,5,5,6])
 
 
-problem_file = ['1040_False.png', '1120_False.png', '1462_False.png', '1608_False.png', '282_False.png', '336_False.png', '34_False.png', '358_False.png', '400_False.png', '422_False.png', '432_False.png', '474_False.png', '506_False.png', '564_False.png', '566_False.png', '608_False.png', '624_False.png', '634_False.png', '682_False.png', '928_False.png', '98_False.png']
+problem_file = ['18577_False-batch_number_False.png', '24400_False-batch_number_False.png', '32598_False-batch_number_False.png', '5872_False-batch_number_False.png']
 
 
 not_passed = []
@@ -86,7 +86,7 @@ for filename in problem_file:
     start = time.time()
     
     first = True if filename.split("_")[1].split(".")[0] == "True" else False
-    #first = True if filename.split("_")[1].split("-")[0] == "True" else False
+    first = True if filename.split("_")[1].split("-")[0] == "True" else False
     
     #GET ALL RELEVANT INFORMATION FROM IMAGE
     img = cv.rotate(cv.imread(folder + filename), cv.ROTATE_180)
@@ -99,7 +99,7 @@ for filename in problem_file:
     
     
     
-    if len(POIs_total_img_resized):
+    if POIs_total_img_resized:
         if write_out:
             poi_to_save = []
             for i,(key,poi) in enumerate(POIs_total_th.items()):
