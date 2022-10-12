@@ -47,7 +47,7 @@ from tensorflow.keras.preprocessing.image import load_img, img_to_array, array_t
 import time 
 
 
-def remove_light_part(img, plot = False):
+def remove_light_part(img, plot = False, prod_type = 0):
     
     #NINARY THRESHOLD TO GET THE WHITE PART
     _, img_th = cv.threshold(img,254,255,cv.THRESH_BINARY)
@@ -66,6 +66,8 @@ def remove_light_part(img, plot = False):
         max_x2 = peaks[1] - 20
     else:
         max_x2 = 400
+    if prod_type == 1:    
+        max_x2 = 600
     #find the two greather peaks
     
     
@@ -77,22 +79,6 @@ def remove_light_part(img, plot = False):
     #get the intersection with the controle line
     idx = np.argwhere(np.diff(np.sign(controle_line - img_th_summed))).flatten()
     x = np.array(range(np.shape(img_th)[0]))
-    """
-    max_x1 = 0
-    max_x2 = 0
-    for i in range(1,len(idx)):
-       if abs(idx[i] - idx[i-1])> abs(max_x1 - max_x2):
-           
-           
-           print(np.sum(img_th_summed[idx[i-1]:idx[i]]))
-           if np.sum(img_th_summed[idx[i-1]:idx[i]]) < 500000:
-               max_x1 = idx[i-1]
-               max_x2 = idx[i]
-           
-    if max_x2 ==0:
-        max_x2 = 550
-        
-    """
     
     img_cropped = img[max_x1:max_x2,:]
     
@@ -288,18 +274,18 @@ def get_POI_y(ZOI, plot = False):
                
     return POIs, POIs_th
     
-def get_POI_intensity(img_gray, crop_entry = True):
+def get_POI_intensity(img_gray, prod_type):
     
     """
     CROP ENTRY
     """
-    if crop_entry:
+    if prod_type == 0:
         img_cropped = img_gray[300:1000,320:1300]
     else:
         img_cropped = img_gray
     
     
-    img_whithout_light = remove_light_part(img_cropped, False)
+    img_whithout_light = remove_light_part(img_cropped, False, prod_type)
     if np.shape(img_whithout_light)[0]:
         ZOI, ZOI_th = get_ZOI_X(img_whithout_light, plot = False)
     else:

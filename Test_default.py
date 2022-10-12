@@ -50,9 +50,13 @@ import time
 """
 LOAD THE DEEP LEARNING MODEL
 """
-checkpoint_path = "model/training_real_number_only_4_128_10/cp-0016.ckpt"
+checkpoint_path = "model/training_real_number_only_4_128_10/cp-0095.ckpt"
 # Load the previously saved weights
 model = keras.models.load_model(checkpoint_path)
+
+ok_all = []
+reject_all = []
+ALL_FILE = []
 
 
 
@@ -99,20 +103,26 @@ GO TROUGH ALL THE FILES
 """
 not_passed = []
 passed = []
+times_all = []
+times_max = []
 plot = False
 
 for filename,batch_number in f.items():
 
     start = time.time()
     
-    first = True if filename.split("_")[1].split(".")[0] == "True" else False
-    #first = True if filename.split("_")[1].split("-")[0] == "True" else False
+    if "-" in filename:
+        first = True if filename.split("_")[1].split("-")[0] == "True" else False
+    else:
+        first = True if filename.split("_")[1].split(".")[0] == "True" else False
     
     #GET ALL RELEVANT INFORMATION FROM IMAGE
     img = cv.rotate(cv.imread(folder + filename), cv.ROTATE_180)
     img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     
-    status = ocr.analyse_img(img_gray, first, model, batch_number, plot)
+    #prod_type = 0 if img full resolution
+    #prod_type = 1 if img truncated 
+    status = ocr.analyse_img(img_gray, first, model, batch_number, plot, 0)
     
     if status == "ok":
         passed.append(filename)
@@ -126,171 +136,141 @@ for filename,batch_number in f.items():
             axs[1].text(0,0, filename +"\n" + status)
     
             plt.show()
-        
+            
+print(folder)
 print("ok : ", len(passed)/len(f)*100)
 print("rejet : ",len(not_passed)/len(f)*100)
 
+ok_all.append(len(passed)/len(f)*100)
+reject_all.append(len(not_passed)/len(f)*100)
+
 
 """
-GET ALL THE FILE IN A FOLDER
+GET ALL THE FILE IN ALL FOLDER
 """
+
+#22-015675
+folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/production_22.09.22_22-015675/"
+f = []
+for (dirpath, dirnames, filenames) in walk(folder):
+    f = [file for file in filenames if ".png" in file]
+    break
+batch_number = np.array([2,2,0,1,5,6,7,5])
+ALL_FILE.append((folder,f,batch_number,1))
+
+#22-015716
+folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/production_26.09.22_22-015716/"
+f = []
+for (dirpath, dirnames, filenames) in walk(folder):
+    f = [file for file in filenames if ".png" in file]
+    break
+batch_number = np.array([2,2,0,1,5,7,1,6])
+ALL_FILE.append((folder,f,batch_number,1))
+
+#22-015676
 folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/production_27.09.22_22-015676/"
-
 f = []
 for (dirpath, dirnames, filenames) in walk(folder):
     f = [file for file in filenames if ".png" in file]
     break
 batch_number = np.array([2,2,0,1,5,6,7,6])
+ALL_FILE.append((folder,f,batch_number,0))
 
-for filename in f:
-    start = time.time()
-    
-    first = True if filename.split("_")[1].split(".")[0] == "True" else False
-    #first = True if filename.split("_")[1].split("-")[0] == "True" else False
-    
-    #GET ALL RELEVANT INFORMATION FROM IMAGE
-    img = cv.rotate(cv.imread(folder + filename), cv.ROTATE_180)
-    img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-    
-    status = ocr.analyse_img(img_gray, first, model, batch_number, plot)
-    
-    if status == "ok":
-        passed.append(filename)
-    else:
-        not_passed.append(filename)
-        
-        if plot:
-            fig, axs = plt.subplots(2)
-                
-            axs[0].imshow(img_gray,'gray')
-            axs[1].text(0,0, filename +"\n" + status)
-    
-            plt.show()
-    
-print("ok : ", len(passed)/len(f)*100)
-print("rejet : ",len(not_passed)/len(f)*100)
-
-
-
-"""
-GET ALL THE FILE IN A FOLDER
-"""
+#22-015715
 folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/production_29.09.22_22-015715/"
-
 f = []
 for (dirpath, dirnames, filenames) in walk(folder):
     f = [file for file in filenames if ".png" in file]
     break
 batch_number = np.array([2,2,0,1,5,7,1,5])
+ALL_FILE.append((folder,f,batch_number,0))
 
-for filename in f:
-    start = time.time()
-    
-    first = True if filename.split("_")[1].split(".")[0] == "True" else False
-    #first = True if filename.split("_")[1].split("-")[0] == "True" else False
-    
-    #GET ALL RELEVANT INFORMATION FROM IMAGE
-    img = cv.rotate(cv.imread(folder + filename), cv.ROTATE_180)
-    img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-    
-    status = ocr.analyse_img(img_gray, first, model, batch_number, plot)
-    
-    if status == "ok":
-        passed.append(filename)
-    else:
-        not_passed.append(filename)
-        
-        if plot:
-            fig, axs = plt.subplots(2)
-                
-            axs[0].imshow(img_gray,'gray')
-            axs[1].text(0,0, filename +"\n" + status)
-    
-            plt.show()
-    
-print("ok : ", len(passed)/len(f)*100)
-print("rejet : ",len(not_passed)/len(f)*100)
-
-
-"""
-GET ALL THE FILE IN A FOLDER
-"""
+#22-015556
 folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/production_06.10.22_22-015556/"
-
 f = []
 for (dirpath, dirnames, filenames) in walk(folder):
     f = [file for file in filenames if ".png" in file]
     break
 batch_number = np.array([2,2,0,1,5,5,5,6])
+ALL_FILE.append((folder,f,batch_number,0))
 
-for filename in f:
-    start = time.time()
-    
-    #first = True if filename.split("_")[1].split(".")[0] == "True" else False
-    first = True if filename.split("_")[1].split("-")[0] == "True" else False
-    
-    #GET ALL RELEVANT INFORMATION FROM IMAGE
-    img = cv.rotate(cv.imread(folder + filename), cv.ROTATE_180)
-    img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-    
-    status = ocr.analyse_img(img_gray, first, model, batch_number, plot)
-    
-    if status == "ok":
-        passed.append(filename)
-    else:
-        not_passed.append(filename)
-        
-        if plot:
-            fig, axs = plt.subplots(2)
-                
-            axs[0].imshow(img_gray,'gray')
-            axs[1].text(0,0, filename +"\n" + status)
-    
-            plt.show()
-    
-print("ok : ", len(passed)/len(f)*100)
-print("rejet : ",len(not_passed)/len(f)*100)
-    
-
-"""
-GET ALL THE FILE IN A FOLDER
-"""
+#22-015556 bad
 folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/bad_imgs_06.10.22_22-015556/"
-
 f = []
 for (dirpath, dirnames, filenames) in walk(folder):
     f = [file for file in filenames if ".png" in file]
     break
 batch_number = np.array([2,2,0,1,5,5,5,6])
+ALL_FILE.append((folder,f,batch_number,0))
 
-for filename in f:
-    start = time.time()
+
+passed_all = []
+not_passed_all = []
+
+for descr in ALL_FILE:
+    folder = descr[0]
+    f = descr[1]
+    batch_number = descr[2]
+    prod_type = descr[3]
+    print(folder)
     
-    #first = True if filename.split("_")[1].split(".")[0] == "True" else False
-    first = True if filename.split("_")[1].split("-")[0] == "True" else False
-    
-    #GET ALL RELEVANT INFORMATION FROM IMAGE
-    img = cv.rotate(cv.imread(folder + filename), cv.ROTATE_180)
-    img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-    
-    status = ocr.analyse_img(img_gray, first, model, batch_number, plot)
-    
-    if status == "ok":
-        passed.append(filename)
-    else:
-        not_passed.append(filename)
+    not_passed = []
+    passed = []
+    plot = False
+    times = []
+    for filename in f:
+        start = time.time()
         
-        if plot:
-            fig, axs = plt.subplots(2)
-                
-            axs[0].imshow(img_gray,'gray')
-            axs[1].text(0,0, filename +"\n" + status)
+        if "-" in filename:
+            first = True if filename.split("_")[1].split("-")[0] == "True" else False
+        else:
+            first = True if filename.split("_")[1].split(".")[0] == "True" else False
+        
+        #GET ALL RELEVANT INFORMATION FROM IMAGE
+        img = cv.rotate(cv.imread(folder + filename), cv.ROTATE_180)
+        img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        
+        #prod_type = 0 if img full resolution
+        #prod_type = 1 if img truncated 
+        status = ocr.analyse_img(img_gray, first, model, batch_number, plot, prod_type)
+        
+        if status == "ok":
+            passed.append(filename)
+            passed_all.append(filename)
+        else:
+            not_passed.append(filename)
+            not_passed_all.append(filename)
+            
+            if plot:
+                fig, axs = plt.subplots(2)
+                    
+                axs[0].imshow(img_gray,'gray')
+                axs[1].text(0,0, filename +"\n" + status)
+        
+                plt.show()
+        times.append(time.time()-start)
+        
     
-            plt.show()
-    
-print("ok : ", len(passed)/len(f)*100)
-print("rejet : ",len(not_passed)/len(f)*100)
-    
+    print("ok : ", len(passed)/len(f)*100)
+    print("rejet : ",len(not_passed)/len(f)*100)
+    ok_all.append(len(passed)/len(f)*100)
+    reject_all.append(len(not_passed)/len(f)*100)
+    times_all.append((np.mean(times), np.std(times)))
+    times_max.append(max(times))
+
+
+
+
+
+print("ok all     : ",ok_all)
+print("reject all : ",reject_all)
+print("mean time  : ", times_all)
+print("max time   : ",times_max)
+
+print("number images analysed : " , len(passed_all) + len(not_passed_all))
+
+print("total passed           :" ,len(passed_all)/(len(passed_all) + len(not_passed_all))*100, "%")
+print("total not passed       :" ,len(not_passed_all)/(len(passed_all) + len(not_passed_all))*100, "%") 
     
     
     
