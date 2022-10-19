@@ -24,7 +24,7 @@ os.chdir("C:/Users/LDE/Prog/OCR_detection")
 
 
 
-def analyse_img(img_gray, first, model, batch_number, plot, prod_type, write_out = False, img_number = 0, output_dir = "" ):
+def analyse_img(img_gray, first, model, batch_number, plot, prod_type, write_out = False, img_number = 0,filename = "", output_dir = "", use_train_val = False):
     
     POIs_total_img_resized,POIs_total_th  = sv.get_POI_intensity(img_gray, prod_type)
     
@@ -37,40 +37,44 @@ def analyse_img(img_gray, first, model, batch_number, plot, prod_type, write_out
         if plot:
             print(classes)
             print(proba_score)
-        
-        
-        
+            
+
         if len(classes) >=3:
             
             if first:
                 classes_prob = str(classes[:3]).strip("[]")
                 batch_number_ref = str(batch_number[:3]).strip("[]")
                 iter_dict = list(POIs_total_img_resized)[0:3]
+                iter_dict_th = list(POIs_total_th)[0:3]
             else:
                 classes_prob = str(classes[-5:]).strip("[]")
                 batch_number_ref = str(batch_number[-5:]).strip("[]")
                 iter_dict = list(POIs_total_img_resized)[-5:]
+                iter_dict_th = list(POIs_total_th)[-5:]
                 
             
             if classes_prob not in batch_number_ref:
                 return "batch_number False"
-            
+                
             
                 
             quality_ok = True
             for i,key in enumerate(iter_dict):
                 
                 poi = POIs_total_img_resized[key]
+                poi_th = POIs_total_th[key]
                 if first:
-                    shape_mean_th_not = cv.imread("number_ref/ref_" + str(batch_number[:3][i]) + ".png",0)
+                    shape_mean_th_not = cv.imread("number_ref_new/ref_" + str(batch_number[:3][i]) + ".png",0)
+                    number_ref = str(batch_number[:3][i])
                 else:
-                    shape_mean_th_not = cv.imread("number_ref/ref_" + str(batch_number[-5:][i]) + ".png",0)   
+                    shape_mean_th_not = cv.imread("number_ref_new/ref_" + str(batch_number[-5:][i]) + ".png",0)   
+                    number_ref = str(batch_number[-5:][i])
                 
                 prob = cv.resize(poi, (40,70), interpolation = cv.INTER_AREA)
-                d1,d2,equ_masked_th = get_impression_score(prob,shape_mean_th_not, False)    
+                d1,d2,equ_masked_th = get_impression_score(prob,shape_mean_th_not, plot)    
                 
                 
-                if d1 < 81:
+                if d1 < 75:
                     
                     if plot:
                         fig, axs = plt.subplots(3)
@@ -81,6 +85,23 @@ def analyse_img(img_gray, first, model, batch_number, plot, prod_type, write_out
                         plt.show()
                     
                     quality_ok = False
+                
+                if write_out:
+                    f = number_ref + "/"  + str(img_number) + filename + ".png"
+                    directory = output_dir
+                    if use_train_val:
+                        rand = np.random.uniform(0, 1)
+                        if rand < 0.8:
+                            directory = output_dir + "train/" 
+                           
+                        else:
+                            directory = output_dir + "val/"
+                        cv.imwrite(directory  + f, poi_th)
+                    else:
+                        cv.imwrite(directory  + f, prob)
+                    img_number += 1
+                    
+                    
                     
                     
             if quality_ok:
@@ -90,46 +111,9 @@ def analyse_img(img_gray, first, model, batch_number, plot, prod_type, write_out
         
             
         
-        
         else:
             
             return "not enough POI"
-        
-        
-        if write_out:
-                poi_to_save = []
-                for i,(key,poi) in enumerate(POIs_total_th.items()):
-                    
-                    poi_to_save.append(poi)
-                    
-                if first:
-                    poi_to_save = poi_to_save[:3]
-                    for number,p in enumerate(poi_to_save):
-                        filename = str(batch_number[number]) + "/"  + str(img_number) + ".png"
-                            
-                        rand = np.random.uniform(0, 1)
-                        if rand < 0.8:
-                            directory = output_dir + "train/" 
-                            img_number +=1
-                        else:
-                            directory = output_dir + "val/"
-                            img_number += 1
-                                
-                        cv.imwrite(directory  + filename, p)
-                else:
-                    poi_to_save = poi_to_save[-5:]
-                    for number,p in enumerate(poi_to_save):
-            
-                        filename = str(batch_number[3+number]) + "/"  + str(img_number) + ".png"
-                            
-                        rand = np.random.uniform(0, 1)
-                        if rand < 0.8:
-                            directory = output_dir + "train/" 
-                            img_number +=1
-                        else:
-                            directory = output_dir + "val/"
-                            img_number += 1 
-                        cv.imwrite(directory  + filename, p)  
                         
             
     else:
@@ -140,7 +124,7 @@ def analyse_img(img_gray, first, model, batch_number, plot, prod_type, write_out
 
 def get_impression_score(prob,ref, plot = False):
     
-    equ = cv.equalizeHist(prob)
+    equ = prob#cv.equalizeHist(prob)
     
     equ_th = cv.adaptiveThreshold(equ,255,cv.ADAPTIVE_THRESH_MEAN_C,cv.THRESH_BINARY,19,0)
     equ_masked_th = cv.bitwise_and(equ_th,equ_th,mask = ref)

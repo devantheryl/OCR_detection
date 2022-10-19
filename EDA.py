@@ -86,10 +86,7 @@ def get_mean_shape(query,img_shape):
     return shape_mean_th_not
 
 
-
-
-    
-    
+"""
 img_shape = (40,70)
 df = get_number_df()
 number = "0"
@@ -98,4 +95,7 @@ shape_mean_th_not = cv.imread("number_ref/ref_" + number + ".png",0)
     
 for i,(index, row) in enumerate(query.iterrows()):
     prob = cv.resize(row["img"][0], img_shape, interpolation = cv.INTER_AREA)
-    ocr.get_impression_score(prob,shape_mean_th_not, True)            
+    ocr.get_impression_score(prob,shape_mean_th_not, True)         
+"""
+
+

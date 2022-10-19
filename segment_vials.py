@@ -65,9 +65,10 @@ def remove_light_part(img, plot = False, prod_type = 0):
     if len(peaks) > 1:
         max_x2 = peaks[1] - 20
     else:
-        max_x2 = 400
+        max_x2 = 500
     if prod_type == 1:    
         max_x2 = 600
+    
     #find the two greather peaks
     
     
@@ -197,7 +198,7 @@ def get_POI_y(ZOI, plot = False):
     POIs = {}
     POIs_th = {}
     for i in range(1,len(idy)):
-       if abs(idy[i] - idy[i-1])> 70:
+       if abs(idy[i] - idy[i-1])> 60:
            
            if np.sum(ZOI_th_summed[idy[i-1]:idy[i]]) > 3000:
                 POI_y1 = idy[i-1]
@@ -219,7 +220,7 @@ def get_POI_y(ZOI, plot = False):
                 POI_prob_summed = np.sum(POI_prob,axis = 1)/max(np.sum(POI_prob,axis = 1)) * np.shape(POI_prob)[1]
                 
                 #get the intersection with the controle line
-                POI_controle_line = np.full(np.shape(POI_prob)[0], 1)
+                POI_controle_line = np.full(np.shape(POI_prob)[0], 10)
                 POI_idx  = np.argwhere(np.diff(np.sign(POI_controle_line - POI_prob_summed))).flatten()
                 
                 #get the best POI
@@ -280,9 +281,11 @@ def get_POI_intensity(img_gray, prod_type):
     CROP ENTRY
     """
     if prod_type == 0:
-        img_cropped = img_gray[300:1000,320:1300]
-    else:
+        img_cropped = img_gray[200:1000,320:1300]
+    if prod_type == 1:
         img_cropped = img_gray
+    if prod_type == 2:
+        img_cropped = img_gray[200:1000,250:1200]
     
     
     img_whithout_light = remove_light_part(img_cropped, False, prod_type)
