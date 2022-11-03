@@ -24,7 +24,13 @@ os.chdir("C:/Users/LDE/Prog/OCR_detection")
 
 
 
-def analyse_img(img_gray, first, model, batch_number, plot, prod_type, write_out = False, img_number = 0,filename = "", output_dir = "", use_train_val = False):
+def analyse_img(img_gray, first, model, batch_number, plot, prod_type,params, write_out = False, img_number = 0,filename = "", output_dir = "", use_train_val = False):
+    
+    th_quality = params["th_quality"]
+    quality_filter_size= params["quality_filter_size"]
+    quality_constant = params["quality_constant"]
+    quality_constrast_norm = params["quality_constrast_norm"]
+    
     
     POIs_total_img_resized,POIs_total_th  = sv.get_POI_intensity(img_gray, prod_type)
     
@@ -54,7 +60,8 @@ def analyse_img(img_gray, first, model, batch_number, plot, prod_type, write_out
                 
             
             if classes_prob not in batch_number_ref:
-                return "batch_number False"
+                #return "batch_number False"
+                pass
                 
             
                 
@@ -65,21 +72,24 @@ def analyse_img(img_gray, first, model, batch_number, plot, prod_type, write_out
                 poi_th = POIs_total_th[key]
                 if first:
                     shape_mean_th_not = cv.imread("number_ref_new/ref_" + str(batch_number[:3][i]) + ".png",0)
+                    weigths = cv.imread("number_ref_new/weights_" + str(batch_number[:3][i]) + ".png",0)
                     number_ref = str(batch_number[:3][i])
                 else:
                     shape_mean_th_not = cv.imread("number_ref_new/ref_" + str(batch_number[-5:][i]) + ".png",0)   
+                    weigths = cv.imread("number_ref_new/weights_" + str(batch_number[-5:][i]) + ".png",0)
                     number_ref = str(batch_number[-5:][i])
+                    
                 
                 prob = cv.resize(poi, (40,70), interpolation = cv.INTER_AREA)
-                d1,d2,equ_masked_th = get_impression_score(prob,shape_mean_th_not, plot)    
+                d1,equ_masked_th = get_impression_score(prob,shape_mean_th_not,quality_filter_size,quality_constant,quality_constrast_norm,weigths, plot)    
                 
                 
-                if d1 < 75:
+                if d1 < th_quality:
                     
                     if plot:
                         fig, axs = plt.subplots(3)
                         axs[0].imshow(poi,'gray')
-                        axs[1].text(0,0, str(d1) + "\n" + str(d2))
+                        axs[1].text(0,0, str(d1) + "\n")
                         axs[2].imshow(equ_masked_th,'gray')
                 
                         plt.show()
@@ -122,16 +132,23 @@ def analyse_img(img_gray, first, model, batch_number, plot, prod_type, write_out
 
 
 
-def get_impression_score(prob,ref, plot = False):
+def get_impression_score(prob,ref, filter_size, constant,constrast_norma,weights, plot = False):
     
-    equ = prob#cv.equalizeHist(prob)
-    
-    equ_th = cv.adaptiveThreshold(equ,255,cv.ADAPTIVE_THRESH_MEAN_C,cv.THRESH_BINARY,19,0)
+    if constrast_norma:
+        equ = cv.equalizeHist(prob)
+    else:
+        equ = prob
+        
+    equ_th = cv.adaptiveThreshold(equ,255,cv.ADAPTIVE_THRESH_MEAN_C,cv.THRESH_BINARY,filter_size,constant)
     equ_masked_th = cv.bitwise_and(equ_th,equ_th,mask = ref)
+    
+    ref_weighted = ref * (weights/255)
+    equ_masked_th_weighted = equ_masked_th * (weights/255)
     
     
     d = (1-np.sum(equ_masked_th)/np.sum(ref))*100
-    d1 = cv.matchShapes(equ_masked_th,ref,1,0.0)*100
+    d2 = (1-np.sum(equ_masked_th_weighted)/np.sum(ref_weighted))*100
+    
     
     if plot:
         fig, ax = plt.subplots(1,5,figsize = (15,4))
@@ -141,11 +158,11 @@ def get_impression_score(prob,ref, plot = False):
         ax[2].imshow(equ_th,'gray')
         ax[3].imshow(equ_masked_th,'gray')
     
-        ax[4].text(0,0.5,str(d) + "\n" + str(d1))
+        ax[4].text(0,0.5,str(d) + "\n" + str(d2))
         
         plt.show()
     
-    return d,d1,equ_masked_th
+    return d,equ_masked_th
 
 
 def intersects(box1, box2):

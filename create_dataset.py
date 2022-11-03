@@ -55,7 +55,7 @@ model = keras.models.load_model(checkpoint_path)
 """
 GET ALL THE FILE IN A FOLDER
 """
-folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/bad_production_14.10.22-22-015778/"
+folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/non-conforme/"
 
 f = []
 for (dirpath, dirnames, filenames) in walk(folder):
@@ -71,7 +71,7 @@ img_number = 0
 out_directory = "dataset/production_22.09.22/"
 output_dir = "dataset_resized_noTh/"
 
-batch_number = np.array([2,2,0,1,5,7,7,8])
+batch_number = np.array([8,8,8,8,8,8,0,8])
 
 
 problem_file = ['11368_False-quality_problem.png', '11378_False-quality_problem.png', '15249_True-quality_problem.png', '15257_True-quality_problem.png', '15258_False-quality_problem.png', '15266_False-quality_problem.png', '15272_False-quality_problem.png', '22642_False-quality_problem.png', '22646_False-quality_problem.png', '22648_False-quality_problem.png', '22652_False-batch_number False.png', '22656_False-quality_problem.png', '22658_False-quality_problem.png', '22660_False-quality_problem.png', '22662_False-quality_problem.png', '22664_False-quality_problem.png', '22670_False-quality_problem.png', '22672_False-quality_problem.png', '22698_False-quality_problem.png', '22702_False-quality_problem.png', '3077_True-quality_problem.png', '38298_False-quality_problem.png', '38304_False-quality_problem.png', '38306_False-batch_number False.png', '38310_False-quality_problem.png', '38314_False-quality_problem.png', '4012_False-quality_problem.png', '4146_False-quality_problem.png', '5348_False-quality_problem.png', '6420_False-quality_problem.png', '6422_False-quality_problem.png', '6424_False-quality_problem.png']
@@ -81,7 +81,15 @@ passed = []
 plot = True
 prod_type = 2
 
-for filename in problem_file:
+
+params = {"th_quality" : 83,
+          "quality_filter_size" : 29,
+          "quality_constant" : 2,
+          "quality_constrast_norm" : 0
+    }
+
+
+for filename in f:
     print(filename)
     start = time.time()
     
@@ -97,7 +105,7 @@ for filename in problem_file:
     
     #prod_type = 0 if img full resolution
     #prod_type = 1 if img truncated 
-    status = ocr.analyse_img(img_gray, first, model, batch_number, plot, prod_type, write_out, img_number,filename, output_dir, False)
+    status = ocr.analyse_img(img_gray, first, model, batch_number, plot, prod_type,params, write_out, img_number,filename, output_dir, False)
     
     
     if status == "ok":
