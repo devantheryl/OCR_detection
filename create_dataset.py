@@ -55,7 +55,7 @@ model = keras.models.load_model(checkpoint_path)
 """
 GET ALL THE FILE IN A FOLDER
 """
-folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/non-conforme/"
+folder = "C:/Users/LDE/Prog/OCR_detection/temp/"
 
 f = []
 for (dirpath, dirnames, filenames) in walk(folder):
@@ -66,12 +66,12 @@ for (dirpath, dirnames, filenames) in walk(folder):
 """
 GO TROUGH ALL THE FILES
 """
-write_out = False
+write_out = True
 img_number = 0
 out_directory = "dataset/production_22.09.22/"
 output_dir = "dataset_resized_noTh/"
 
-batch_number = np.array([8,8,8,8,8,8,0,8])
+batch_number = np.array([4,4,4,4,4,4,4,4])
 
 
 problem_file = ['11368_False-quality_problem.png', '11378_False-quality_problem.png', '15249_True-quality_problem.png', '15257_True-quality_problem.png', '15258_False-quality_problem.png', '15266_False-quality_problem.png', '15272_False-quality_problem.png', '22642_False-quality_problem.png', '22646_False-quality_problem.png', '22648_False-quality_problem.png', '22652_False-batch_number False.png', '22656_False-quality_problem.png', '22658_False-quality_problem.png', '22660_False-quality_problem.png', '22662_False-quality_problem.png', '22664_False-quality_problem.png', '22670_False-quality_problem.png', '22672_False-quality_problem.png', '22698_False-quality_problem.png', '22702_False-quality_problem.png', '3077_True-quality_problem.png', '38298_False-quality_problem.png', '38304_False-quality_problem.png', '38306_False-batch_number False.png', '38310_False-quality_problem.png', '38314_False-quality_problem.png', '4012_False-quality_problem.png', '4146_False-quality_problem.png', '5348_False-quality_problem.png', '6420_False-quality_problem.png', '6422_False-quality_problem.png', '6424_False-quality_problem.png']
@@ -79,7 +79,7 @@ problem_file = ['11368_False-quality_problem.png', '11378_False-quality_problem.
 not_passed = []
 passed = []
 plot = True
-prod_type = 2
+prod_type = 1
 
 
 params = {"th_quality" : 83,

@@ -97,7 +97,7 @@ def analyse_img(img_gray, first, model, batch_number, plot, prod_type,params, wr
                     quality_ok = False
                 
                 if write_out:
-                    f = number_ref + "/"  + str(img_number) + filename + ".png"
+                    f = number_ref + "/"  + str(img_number) + filename
                     directory = output_dir
                     if use_train_val:
                         rand = np.random.uniform(0, 1)
