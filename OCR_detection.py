@@ -31,8 +31,14 @@ def analyse_img(img_gray, first, model, batch_number, plot, prod_type,params, wr
     quality_constant = params["quality_constant"]
     quality_constrast_norm = params["quality_constrast_norm"]
     
+    status = "ok"
     
     POIs_total_img_resized,POIs_total_th  = sv.get_POI_intensity(img_gray, prod_type)
+    
+    summary = {"predicted_classes" : None,
+               "predicted_proba" : None,
+               "score" : [],
+               }
     
     if POIs_total_img_resized:
         
@@ -40,9 +46,13 @@ def analyse_img(img_gray, first, model, batch_number, plot, prod_type,params, wr
         classes, probas = get_number.get_number_from_image_POI(model,POIs_total_th)
         proba_score = [probas[i,classe] for i, classe in enumerate(classes)]
         
+        summary["predicted_classes"] = classes
+        summary["predicted_proba"] = proba_score
+        
         if plot:
             print(classes)
             print(proba_score)
+            
             
 
         if len(classes) >=3:
@@ -60,12 +70,12 @@ def analyse_img(img_gray, first, model, batch_number, plot, prod_type,params, wr
                 
             
             if classes_prob not in batch_number_ref:
-                #return "batch_number False"
-                pass
+                status = "batch number False"
                 
             
                 
             quality_ok = True
+            
             for i,key in enumerate(iter_dict):
                 
                 poi = POIs_total_img_resized[key]
@@ -83,6 +93,7 @@ def analyse_img(img_gray, first, model, batch_number, plot, prod_type,params, wr
                 prob = cv.resize(poi, (40,70), interpolation = cv.INTER_AREA)
                 d1,equ_masked_th = get_impression_score(prob,shape_mean_th_not,quality_filter_size,quality_constant,quality_constrast_norm,weigths, plot)    
                 
+                summary["score"].append({"number_ref" : number_ref, "score" : d1 })
                 
                 if d1 < th_quality:
                     
@@ -94,7 +105,7 @@ def analyse_img(img_gray, first, model, batch_number, plot, prod_type,params, wr
                 
                         plt.show()
                     
-                    quality_ok = False
+                    status = "quality_problem"
                 
                 if write_out:
                     f = number_ref + "/"  + str(img_number) + filename
@@ -110,24 +121,15 @@ def analyse_img(img_gray, first, model, batch_number, plot, prod_type,params, wr
                     else:
                         cv.imwrite(directory  + f, prob)
                     img_number += 1
-                    
-                    
-                    
-                    
-            if quality_ok:
-                return "ok"
-            else:
-                return "quality_problem"
-        
-            
-        
+
         else:
             
-            return "not enough POI"
+            status = "not enough POI"
                         
-            
     else:
-        return "no batch number"
+        status = "no batch number"
+        
+    return status, summary
     
 
 

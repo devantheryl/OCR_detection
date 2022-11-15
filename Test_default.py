@@ -60,12 +60,15 @@ def test_default(params, plot = False):
     FN = []
     
     
-    """"""""""""""""""
-    """BAD ANALYSES"""
-    """"""""""""""""""
+    """
+    =============================================================================
+    BAD ANALYSES
+    =============================================================================
+    """
     """
     GET ALL THE FILE IN A FOLDER
     """
+    
     folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/non-conforme/"
     
     f = {
@@ -219,6 +222,24 @@ def test_default(params, plot = False):
     batch_number = np.array([2,2,0,1,5,8,3,7])
     ALL_FILE.append((folder,f,batch_number,2))
     
+    #22-015915
+    folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/bad_production_22-015915/"
+    f = []
+    for (dirpath, dirnames, filenames) in walk(folder):
+        f = [file for file in filenames if ".png" in file]
+        break
+    batch_number = np.array([2,2,0,1,5,9,1,5])
+    ALL_FILE.append((folder,f,batch_number,2))
+    
+    #22-015916
+    folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/bad_production_22-015916/"
+    f = []
+    for (dirpath, dirnames, filenames) in walk(folder):
+        f = [file for file in filenames if ".png" in file]
+        break
+    batch_number = np.array([2,2,0,1,5,9,1,6])
+    ALL_FILE.append((folder,f,batch_number,2))
+    
     
     
     passed_all = []
@@ -249,7 +270,7 @@ def test_default(params, plot = False):
             
             #prod_type = 0 if img full resolution
             #prod_type = 1 if img truncated 
-            status = ocr.analyse_img(img_gray, first, model, batch_number, plot, prod_type, params)
+            status, summary = ocr.analyse_img(img_gray, first, model, batch_number, plot, prod_type, params)
             
             if status == "ok":
                 if plot:
@@ -304,13 +325,16 @@ def test_default(params, plot = False):
 
     
     """
+    ===============================================================================
     GOOD ANALYSES
+    ===============================================================================
     """
     passed_all = []
     not_passed_all = []
     ok_all = []
     reject_all = []
     ALL_FILE = []
+    summary_all = {"ok" : [], "nok" : []}
     
     not_passed = []
     passed = []
@@ -406,6 +430,36 @@ def test_default(params, plot = False):
     ALL_FILE.append((folder,f,batch_number,2))
     
     
+    #22-015880
+    folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/production_22-015880/"
+    f = []
+    for (dirpath, dirnames, filenames) in walk(folder):
+        f = [file for file in filenames if ".png" in file]
+        break
+    batch_number = np.array([2,2,0,1,5,8,8,0])
+    ALL_FILE.append((folder,f,batch_number,2))
+    
+    
+    #22-015915
+    folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/production_22-015915/"
+    f = []
+    for (dirpath, dirnames, filenames) in walk(folder):
+        f = [file for file in filenames if ".png" in file]
+        break
+    batch_number = np.array([2,2,0,1,5,9,1,5])
+    ALL_FILE.append((folder,f,batch_number,2))
+    
+    
+    #22-015916
+    folder = "C:/Users/LDE/Prog/OCR_detection/Tests_Analyse/production_22-015916/"
+    f = []
+    for (dirpath, dirnames, filenames) in walk(folder):
+        f = [file for file in filenames if ".png" in file]
+        break
+    batch_number = np.array([2,2,0,1,5,9,1,6])
+    ALL_FILE.append((folder,f,batch_number,2))
+    
+    
     erreur_type = []
     
     for descr in ALL_FILE:
@@ -433,15 +487,17 @@ def test_default(params, plot = False):
             
             #prod_type = 0 if img full resolution
             #prod_type = 1 if img truncated 
-            status = ocr.analyse_img(img_gray, first, model, batch_number, plot, prod_type, params)
+            status, summary = ocr.analyse_img(img_gray, first, model, batch_number, plot, prod_type, params)
             
             erreur_type.append(status)
             if status == "ok":
                 passed.append(filename)
                 passed_all.append(filename)
+                summary_all["ok"].append(summary)
             else:
                 not_passed.append(filename)
                 not_passed_all.append(filename)
+                summary_all["nok"].append(summary)
                 
                 if plot:
                     FN.append(img)
@@ -487,7 +543,7 @@ def test_default(params, plot = False):
             plt.imshow(img,'gray')
             plt.show()
     
-    return TN, TP
+    return TN, TP, summary_all
         
 
 def main():
@@ -495,28 +551,44 @@ def main():
     
     params = wandb.config
     
-    TN, TP = test_default(params, False)
+    TN, TP, _ = test_default(params, False)
     
     wandb.log({"TN" : TN, "TP" : TP, "score": TN + TP})
+  
+sweep = False
     
-# 🐝 Step 2: Define sweep config    
-sweep_configuration = {
-    'method': 'bayes',
-    'name': 'sweep',
-    'metric': {'goal': 'maximize', 'name': 'score', "target" : 200},
-    'parameters': 
-    {
-         "th_quality" : {"max" : 90, "min" : 60},
-         "quality_filter_size" : {'values': [9, 11, 13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45]},
-         "quality_constant" : {'values': [0,2,4,6,8,10,12,14,16,18,20]},
-         "quality_constrast_norm" : {"values" : [0,1]}
+if sweep:
+    # 🐝 Step 2: Define sweep config    
+    sweep_configuration = {
+        'method': 'bayes',
+        'name': 'sweep',
+        'metric': {'goal': 'maximize', 'name': 'score', "target" : 200},
+        'parameters': 
+        {
+             "th_quality" : {"max" : 85, "min" : 70},
+             "quality_filter_size" : {'values': [9, 11,15,17,19,21,23,25,27,29,31,33,35,37]},
+             "quality_constant" : {'values': [0,2,4]},
+             "quality_constrast_norm" : {"values" : [0,1]}
+        }
+    
     }
-
-}
+        
+    # 🐝 Step 3: Initialize sweep by passing in config
+    sweep_id = wandb.sweep(sweep=sweep_configuration, project='test_quality_OCR')
     
-# 🐝 Step 3: Initialize sweep by passing in config
-sweep_id = wandb.sweep(sweep=sweep_configuration, project='test_quality_OCR')
+    
+    # 🐝 Step 4: Call to `wandb.agent` to start a sweep
+    wandb.agent(sweep_id, function=main, count=200)
 
-
-# 🐝 Step 4: Call to `wandb.agent` to start a sweep
-wandb.agent(sweep_id, function=main, count=200)
+else:
+    params = {"th_quality" : 83,
+          "quality_filter_size" : 29,
+          "quality_constant" : 2,
+          "quality_constrast_norm" : 0
+    }
+    TN, TP, summary_all = test_default(params, False)
+    
+    
+    
+    
+    

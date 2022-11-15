@@ -42,12 +42,7 @@ import random
 from random import sample
 
 
-"""
-LOAD THE DEEP LEARNING MODEL
-"""
-checkpoint_path = "model/training_real_number_only_4_128_10/cp-0095.ckpt"
-# Load the previously saved weights
-model = keras.models.load_model(checkpoint_path)
+
 
 
 
@@ -154,7 +149,7 @@ ref_folder = "C:/Users/LDE/Prog/OCR_detection/number_ref_new/"
 
 
 
-number_of_defaut_per_percent = 100
+number_of_defaut_per_percent = 10
 for i in range(number_of_defaut_per_percent):
     print(i)
     for percent in [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5]:
@@ -170,31 +165,20 @@ for i in range(number_of_defaut_per_percent):
                 img_th = cv.adaptiveThreshold(img_gray,255,cv.ADAPTIVE_THRESH_MEAN_C,cv.THRESH_BINARY,29,2)
                 img_th_not = np.abs(img_th - 255)
                 
-                
-                
                 white_part = np.argwhere(img_th_not)
                 
-                
-                
+            
                 img_dark_NOISE = get_random_noise(white_part,img_gray.copy(),percent,img_gray_flat)
                 img_dark_ROW = get_random_row(white_part,img_gray.copy(),2,percent,img_gray_flat)
                 img_dark_BLOB = get_random_blob(white_part,img_gray.copy(),percent,img_gray_flat)
                 
-                """
-                number,proba = get_number.get_number_from_image_POI(model, {"noise":img_dark_NOISE, "row":img_dark_ROW, "blob" : img_dark_BLOB})
-                print(number)
-                print(proba)
-                """
+
                 
                 defautheque_folder = "C:/Users/LDE/Prog/OCR_detection/Defautheque/"
                 cv.imwrite(defautheque_folder + "blob/" + str(int(percent*100)) + "/"  + key + "/" + str(i) + "_" + prob_filename , img_dark_BLOB)
                 cv.imwrite(defautheque_folder + "row/" + str(int(percent*100)) + "/"  + key + "/" + str(i) + "_" + prob_filename , img_dark_ROW)
                 cv.imwrite(defautheque_folder + "noise/" + str(int(percent*100)) + "/"  + key +"/" + str(i) + "_" + prob_filename , img_dark_NOISE)
-                
-                img_th = cv.adaptiveThreshold(img_dark_ROW,255,cv.ADAPTIVE_THRESH_MEAN_C,cv.THRESH_BINARY,29,2)
-                img_th_not = np.abs(img_th - 255)
-                img_th_not[ref == 0] = 0
-                
+
 
 
 

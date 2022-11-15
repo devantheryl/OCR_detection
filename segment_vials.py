@@ -302,7 +302,28 @@ def get_POI_intensity(img_gray, prod_type):
     
     
 
-def get_caps_color(img):
-    pass
+def get_flipoff_zoi(img, plot):
+    #NINARY THRESHOLD TO GET THE WHITE PART
+    img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    _, img_th = cv.threshold(img_gray,254,255,cv.THRESH_BINARY)
+    img_th_summed = np.sum(img_th,axis = 1)/max(np.sum(img_th,axis = 1) +1) * np.shape(img_th)[0]
     
+    peaks, _ = find_peaks(img_th_summed, distance=300)
     
+    ZOI = img[peaks[0]-200:peaks[0]-100, 250:1200]
+
+    if plot:
+        
+        plt.imshow(img)
+        plt.show()
+        
+        
+        plt.imshow(img_th,'gray')
+        plt.plot(img_th_summed[peaks],peaks, "x")
+        plt.show()
+        
+        plt.imshow(ZOI)
+        plt.show()
+        
+    return ZOI
+        
